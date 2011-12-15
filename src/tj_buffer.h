@@ -139,7 +139,15 @@ int
 tj_buffer_append(tj_buffer *b, tj_buffer_byte *data, size_t n);
 
 /*
- *
+ * Add a string to the end of the buffer, including the null
+ * terminator, growing the buffer allocation if necessary.  If the
+ * internal memory allocation cannot be grown to encompass all of the
+ * data, none of it is written and the previous buffer contents and
+ * size are maintained.  Nothing is done to the existing contents of
+ * the buffer.  In particular, this means that if the existing buffer
+ * already has a null terminator, functions like strcmp() will only
+ * see the portion up to that terminator.  tj_buffer_appendAsString is
+ * intended to be used for iterated string construction.
  *
  * \param b The buffer to operate on.
  * \param str Null terminated string.
@@ -150,7 +158,13 @@ int
 tj_buffer_appendString(tj_buffer *b, const char *str);
 
 /*
- *
+ * Add a string to the end of the buffer, including the null
+ * terminator, growing the buffer allocation if necessary.  If the
+ * internal memory allocation cannot be grown to encompass all of the
+ * data, none of it is written and the previous buffer contents and
+ * size are maintained.  The last byte of the previous buffer is
+ * assumed to be a null terminator and is overwritten.  This function
+ * can therefore be called iteratively to construct a string.
  *
  * \param b The buffer to operate on.
  * \param str Null terminated string.
@@ -162,20 +176,19 @@ tj_buffer_appendAsString(tj_buffer *b, const char *str);
 
 
 /*
- * Reads a text file into a buffer.
+ * Read a file or file stream into a buffer.  The given file handle
+ * can be a stream such as stdin, but the entire contents will be read
+ * before the function returns.  Internally, the function reads bytes
+ * in TJ_PAGE_SIZE sized chunks, which may be redefined at compile
+ * time.  Note that no null terminator is included.  I.e., to read a
+ * text file from f and interpret as a string, read the file using
+ * tj_buffer_appendFileStream(b, f), and then call
+ * tj_buffer_appendString(b, "") to append a null terminator.
  *
  * \param b The buffer to operate on.
- * \param fh An open file descriptor to read from.  This can be a
- * stream such as stdin, but the entire contents will be read before
- * ontonet_util_readTextFile returns.
- * \param buff Contains the read contents.  The buffer will not shrink
- * but may grow.  The actual location of the internal data may also
- * change.  buff may be empty to begin but any previously allocated
- * memory will be used.  The actual number of content bytes may be
- * less than the length of the buffer if reused.
+ * \param fh An open file descriptor to read from.
  *
- * \return The number of characters read.  The succeeding byte in the
- * buffer will also be set to 0.
+ * \return 0 on failure, 1 otherwise.
  */
 int
 tj_buffer_appendFileStream(tj_buffer *b, FILE *fh);
