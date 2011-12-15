@@ -25,7 +25,9 @@
 INCS=-Isrc/
 CFLAGS+=-g -Wall
 
-TESTS=test-tj_buffer
+TESTS=test-tj_buffer   \
+      test-tj_template
+
 TEST_SRCS=$(addsuffix .c,$(addprefix test/,$(TESTS)))
 TEST_TGTS=$(addprefix bin/,$(TESTS))
 
@@ -36,7 +38,12 @@ dirs:
 	@if [ ! -e obj ]; then mkdir -p obj; fi
 	@if [ ! -e bin ]; then mkdir -p bin; fi
 
+#-----------------------------------------------------------------------
+
 bin/test-tj_buffer: test/test-tj_buffer.c src/tj_buffer.c
+	$(CC) $(CFLAGS) -o $@ $^ $(INCS)
+
+bin/test-tj_template: test/test-tj_template.c src/tj_template.c src/tj_buffer.c
 	$(CC) $(CFLAGS) -o $@ $^ $(INCS)
 
 
