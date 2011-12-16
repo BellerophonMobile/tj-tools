@@ -139,6 +139,12 @@ int
 tj_buffer_append(tj_buffer *b, tj_buffer_byte *data, size_t n);
 
 /*
+ *
+ */
+int
+tj_buffer_appendBuffer(tj_buffer *b, tj_buffer *s);
+
+/*
  * Add a string to the end of the buffer, including the null
  * terminator, growing the buffer allocation if necessary.  If the
  * internal memory allocation cannot be grown to encompass all of the

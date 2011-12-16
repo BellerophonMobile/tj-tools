@@ -176,6 +176,13 @@ tj_buffer_append(tj_buffer *b, tj_buffer_byte *data, size_t n)
 }
 
 int
+tj_buffer_appendBuffer(tj_buffer *b, tj_buffer *s)
+{
+  return tj_buffer_append(b, s->m_buff, s->m_used);
+  // end tj_buffer_appendBuffer
+}
+
+int
 tj_buffer_appendString(tj_buffer *b, const char *str)
 {
   int n = strlen(str)+1;

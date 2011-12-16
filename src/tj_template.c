@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "tj_template.h"
@@ -54,6 +55,193 @@
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
+typedef struct tj_template_variable tj_template_variable;
+struct tj_template_variable {
+  char *m_label;
+  tj_buffer *m_substitution;
+  tj_template_variable *m_next;
+  char m_tracking;
+  char m_recurse;
+};
+
+struct tj_template_variables {
+  tj_template_variable *m_variables;
+};
+
+//----------------------------------
+tj_template_variable *
+tj_template_variable_create(const char *label);
+void
+tj_template_variable_finalize(tj_template_variable *x);
+
+tj_template_variable *
+tj_template_variables_find(tj_template_variables *vars, const char *label);
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+tj_template_variables *
+tj_template_variables_create(void)
+{
+  tj_template_variables *vars;
+  if ((vars=malloc(sizeof(tj_template_variables))) == 0) {
+    TJ_ERROR("No memory for tj_template_variables.");
+    return 0;
+  }
+  vars->m_variables = 0;
+  return vars;
+  // end tj_template_variables
+}
+
+void
+tj_template_variables_finalize(tj_template_variables *vars)
+{
+  tj_template_variable *var;
+  while ((var = vars->m_variables) != 0) {
+    vars->m_variables = var->m_next;
+    tj_template_variable_finalize(var);
+  }
+  free(vars);
+  // end tj_template_variables
+}
+
+//----------------------------------------------
+tj_template_variable *
+tj_template_variable_create(const char *label)
+{
+  TJ_LOG("New template variable %s.", label);
+  tj_template_variable *v;
+  if ((v = malloc(sizeof(tj_template_variable))) == 0) {
+    TJ_ERROR("No memory for tj_template_variable.");
+    return 0;
+  }
+
+  if ((v->m_substitution = tj_buffer_create(0)) == 0) {
+    TJ_ERROR("No memory for tj_buffer.");
+    free(v);
+    return 0;
+  }
+
+  if ((v->m_label = strdup(label)) == 0) {
+    TJ_ERROR("No memory for label.");
+    free(v->m_substitution);
+    free(v);
+    return 0;
+  }
+
+  v->m_recurse = 0;
+
+  return v;
+  // end tj_template_variable_create
+}
+
+void
+tj_template_variable_finalize(tj_template_variable *x)
+{
+  TJ_LOG("Finalizing %s.", x->m_label);
+  tj_buffer_finalize(x->m_substitution);
+  free(x->m_label);
+  free(x);
+  // end tj_template_variable_finalize
+}
+
+tj_template_variable *
+tj_template_variables_find(tj_template_variables *vars, const char *label)
+{
+  tj_template_variable *v = vars->m_variables;
+  while (v != 0 && strcmp(v->m_label, label)) {
+    v = v->m_next;
+  }
+  return v;
+  // end tj_template_variables_find
+}
+
+void
+tj_template_variables_setRecurse(tj_template_variables *vars,
+                                 const char *label, char recurse)
+{
+  tj_template_variable *v = tj_template_variables_find(vars, label);
+  if (v != 0)
+    v->m_recurse = recurse;
+  // end tj_template_variables_setRecurse
+}
+
+//----------------------------------------------
+int
+tj_template_variables_setFromString(tj_template_variables *vars,
+                                    const char *label,
+                                    const char *substitution)
+{
+  tj_template_variable *v = tj_template_variables_find(vars, label);
+
+  if (v == 0) {
+    if ((v = tj_template_variable_create(label)) == 0) {
+      return 0;
+    }
+    v->m_next = vars->m_variables;
+    vars->m_variables = v;
+    // end v==0
+  } else
+    tj_buffer_reset(v->m_substitution);
+
+  if (!tj_buffer_append(v->m_substitution,
+                        (tj_buffer_byte *) substitution,
+                        strlen(substitution))) {
+    TJ_ERROR("Could not append string to template variable.");
+    return 0;
+  }
+
+  return 1;
+  // end tj_template_variables_setFromString
+}
+
+int
+tj_template_variables_setFromFileStream(tj_template_variables *vars,
+                                        const char *label, FILE *substitution)
+{
+  tj_template_variable *v = tj_template_variables_find(vars, label);
+
+  if (v == 0) {
+    if ((v = tj_template_variable_create(label)) == 0) {
+      return 0;
+    }
+    v->m_next = vars->m_variables;
+    vars->m_variables = v;
+    // end v==0
+  }
+  else
+    tj_buffer_reset(v->m_substitution);
+
+  if (!tj_buffer_appendFileStream(v->m_substitution, substitution)) {
+    TJ_ERROR("Could not append file stream to template variable.");
+    return 0;
+  }
+
+  return 1;
+  // end tj_template_variables_setFromFileStream
+}
+
+int
+tj_template_variables_setFromFile(tj_template_variables *vars,
+                                  const char *label, const char *filename)
+{
+  FILE *fp;
+  if ((fp = fopen(filename, "rb")) == 0) {
+    TJ_ERROR("Could not open file %s for read.", filename);
+  }
+
+  if (!tj_template_variables_setFromFileStream(vars, label, fp)) {
+    fclose(fp);
+    TJ_ERROR("Could not append file stream to template variable.");
+    return 0;
+  }
+
+  fclose(fp);
+
+  return 1;
+  // end tj_template_variables_setFromFile
+}
+
+//--------------------------------------------------------------
 typedef enum {
   SCAN,
   MARK,
@@ -61,33 +249,17 @@ typedef enum {
 } tmpl_scan_mode;
 
 int
-tj_template_appendExpansion(tj_buffer *dest,
-                            tj_buffer *src,
-                            const tj_template_variable *variables,
-                            int numVariables)
+tj_template_variables_apply(tj_template_variables *variables,
+                            tj_buffer *dest,
+                            tj_buffer *src)
 {
   int tmplIndex = 0;
-  int v;
   int start = 0, end = 0;
-  char tracking[TJ_TEMPLATE_MAX_VARS];
-  size_t sublen[TJ_TEMPLATE_MAX_VARS];
   tmpl_scan_mode mode = SCAN;
-  tj_buffer_byte *template = tj_buffer_getBytes(src);
   int varScanLen;
 
-  if (numVariables > TJ_TEMPLATE_MAX_VARS) {
-    TJ_ERROR("Too many variables, %d > max %d\n",
-                      numVariables, TJ_TEMPLATE_MAX_VARS);
-    return 0;
-  }
-
-  for (v = 0; v < numVariables; v++) {
-    if (variables[v].substitution != 0) {
-      sublen[v] = strlen(variables[v].substitution);
-    } else {
-      sublen[v] = 0;
-    }
-  }
+  tj_buffer_byte *template = tj_buffer_getBytes(src);
+  tj_template_variable *v;
 
   while (tmplIndex < tj_buffer_getUsed(src)) {
     if (template[tmplIndex] == '$') {
@@ -104,8 +276,8 @@ tj_template_appendExpansion(tj_buffer *dest,
       }
     } else {
       if (mode == MARK) {
-	for (v = 0; v < numVariables; v++) {
-	  tracking[v] = 1;
+        for (v = variables->m_variables; v != 0; v = v->m_next) {
+          v->m_tracking = 1;
         }
 	varScanLen = 0;
 	end = tmplIndex-1; // Cannot happen before tmplIndex==1, so safe
@@ -115,11 +287,10 @@ tj_template_appendExpansion(tj_buffer *dest,
       if (mode == TRACK) {
 	char alive = 0;
 
-	for (v = 0; v < numVariables; v++) {
+        for (v = variables->m_variables; v != 0; v = v->m_next) {
+	  if (v->m_tracking) {
 
-	  if (tracking[v]) {
-
-	    if (variables[v].label[varScanLen] == 0) {
+	    if (v->m_label[varScanLen] == 0) {
 	      alive = 0;
 
               if (!tj_buffer_append(dest, &template[start], end-start)) {
@@ -127,17 +298,24 @@ tj_template_appendExpansion(tj_buffer *dest,
                 goto error;
               }
 
-              if (!tj_buffer_append(dest,
-                                    (tj_buffer_byte *)variables[v].substitution,
-                                    sublen[v])) {
-                TJ_ERROR("Could not append substitution.");
-                goto error;
+              if (v->m_recurse) {
+                if (!tj_template_variables_apply(variables,
+                                                 dest,
+                                                 v->m_substitution)) {
+                  TJ_ERROR("Could not recurse substitution.");
+                  goto error;
+                }
+              } else {
+                if (!tj_buffer_appendBuffer(dest, v->m_substitution)) {
+                  TJ_ERROR("Could not append substitution.");
+                  goto error;
+                }
               }
 	      start = tmplIndex;
 
 	      break;
-	    } else if (variables[v].label[varScanLen] != template[tmplIndex]) {
-	      tracking[v] = 0;
+	    } else if (v->m_label[varScanLen] != template[tmplIndex]) {
+	      v->m_tracking = 0;
 	    } else {
               alive = 1;
             }

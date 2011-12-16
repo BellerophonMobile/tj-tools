@@ -27,13 +27,31 @@
 
 #include "tj_buffer.h"
 
-//----------------------------------------------
-#define TJ_TEMPLATE_MAX_VARS    32
+//----------------------------------------------------------------------
+typedef struct tj_template_variables tj_template_variables;
 
-typedef struct {
-  const char *label;
-  const char *substitution;
-} tj_template_variable;
+tj_template_variables *
+tj_template_variables_create(void);
+
+void
+tj_template_variables_finalize(tj_template_variables *vars);
+
+void
+tj_template_variables_setRecurse(tj_template_variables *vars,
+                                 const char *label, char recurse);
+
+int
+tj_template_variables_setFromString(tj_template_variables *vars,
+                                    const char *label,
+                                    const char *substitution);
+
+int
+tj_template_variables_setFromFileStream(tj_template_variables *vars,
+                                        const char *label, FILE *substitution);
+
+int
+tj_template_variables_setFromFile(tj_template_variables *vars,
+                                  const char *label, const char *filename);
 
 /*
  * Expand a template into a buffer, applying a set of variable
@@ -42,9 +60,8 @@ typedef struct {
  * \return 0 on failure, 1 otherwise.
  */
 int
-tj_template_appendExpansion(tj_buffer *dest,
-                            tj_buffer *src,
-                            const tj_template_variable *variables,
-                            int numVariables);
+tj_template_variables_apply(tj_template_variables *variables,
+                            tj_buffer *dest,
+                            tj_buffer *src);
 
 #endif // __tj_template_h__

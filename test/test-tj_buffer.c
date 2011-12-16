@@ -174,7 +174,7 @@ main(int argc, char *argv[])
     return -1;
   }
 
-  printf("Done.");
+  printf("Done.\n");
 
   return 0;
   // end main

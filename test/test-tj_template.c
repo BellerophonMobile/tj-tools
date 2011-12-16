@@ -42,15 +42,10 @@ main(int argc, char *argv[])
   //------------------------------------------------------------
   tj_buffer_appendString(src, "HEL$XLO!");
 
-  tj_template_variable vars1[] =
-    {
-      {
-        .label = "X",
-        .substitution = "mushi"
-      }
-    };
+  tj_template_variables *vars = tj_template_variables_create();
+  tj_template_variables_setFromString(vars, "X", "mushi");
 
-  tj_template_appendExpansion(target, src, vars1, 1);
+  tj_template_variables_apply(vars, target, src);
 
   printf("Res: '%s'\n", tj_buffer_getAsString(target));
 
@@ -59,52 +54,61 @@ main(int argc, char *argv[])
   }
 
   //------------------------------------------------------------
+  tj_template_variables_finalize(vars);
+  vars = tj_template_variables_create();
+
   tj_buffer_reset(target);
   tj_buffer_reset(src);
   tj_buffer_appendString(src, "A $MAN, a $PLAN, a $CANAL, Panama!");
 
-  tj_template_variable vars2[] =
-    {
-      {
-        .label = "MAN",
-        .substitution = "man"
-      },
-      {
-        .label = "PLAN",
-        .substitution = "plan"
-      },
-      {
-        .label = "CANAL",
-        .substitution = "canal"
-      }
-    };
+  tj_template_variables_setFromString(vars, "MAN", "man");
+  tj_template_variables_setFromString(vars, "PLAN", "plan");
+  tj_template_variables_setFromString(vars, "CANAL", "canal");
 
-  tj_template_appendExpansion(target, src, vars2, 3);
+  tj_template_variables_apply(vars, target, src);
 
   printf("Res: '%s'\n", tj_buffer_getAsString(target));
 
-  if (strcmp(tj_buffer_getAsString(target), "A man, a plan, a canal, Panama!")) {
+  if (strcmp(tj_buffer_getAsString(target),
+             "A man, a plan, a canal, Panama!")) {
     FAIL("Did not get expected accumulated string.");
   }
 
   //------------------------------------------------------------
+  tj_template_variables_finalize(vars);
+  vars = tj_template_variables_create();
+
   tj_buffer_reset(target);
   tj_buffer_reset(src);
   tj_buffer_appendString(src, "$MUSHI");
 
-  tj_template_variable vars3[] =
-    {
-      {
-        .label = "MUSHI",
-        .substitution = "mushi"
-      }
-    };
+  tj_template_variables_setFromFile(vars, "MUSHI", "test/mushi");
 
-  tj_template_appendExpansion(target, src, vars3, 1);
+  tj_template_variables_apply(vars, target, src);
 
   printf("Res: '%s'\n", tj_buffer_getAsString(target));
 
-  if (strcmp(tj_buffer_getAsString(target), "mushi")) {
+  if (strcmp(tj_buffer_getAsString(target), "MUSHI")) {
+    FAIL("Did not get expected accumulated string.");
+  }
+
+  //------------------------------------------------------------
+  tj_template_variables_finalize(vars);
+  vars = tj_template_variables_create();
+
+  tj_buffer_reset(target);
+  tj_buffer_reset(src);
+  tj_buffer_appendString(src, "$MUSHI");
+
+  tj_template_variables_setFromString(vars, "X", "mushi");
+  tj_template_variables_setFromFile(vars, "MUSHI", "test/mushi2");
+  tj_template_variables_setRecurse(vars, "MUSHI", 1);
+
+  tj_template_variables_apply(vars, target, src);
+
+  printf("Res: '%s'\n", tj_buffer_getAsString(target));
+
+  if (strcmp(tj_buffer_getAsString(target), "mushi mushi mushi")) {
     FAIL("Did not get expected accumulated string.");
   }
 
@@ -117,7 +121,9 @@ main(int argc, char *argv[])
     return -1;
   }
 
-  printf("Done.");
+  tj_template_variables_finalize(vars);
+
+  printf("Done.\n");
 
   return 0;
 
