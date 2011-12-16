@@ -52,7 +52,7 @@
 #endif
 
 #ifndef TJ_PAGE_SIZE
-#define TJ_PAGE_SIZE 1024
+#define TJ_PAGE_SIZE (size_t) 1024
 #endif
 
 //----------------------------------------------------------------------
@@ -71,13 +71,13 @@ tj_buffer_create(size_t initial)
 {
   tj_buffer *b;
   if ((b = malloc(sizeof(tj_buffer))) == 0) {
-    TJ_ERROR("No memory for tj_buffer [%d bytes].", sizeof(tj_buffer));
+    TJ_ERROR("No memory for tj_buffer [%zu bytes].", sizeof(tj_buffer));
     return 0;
   }
 
   if (initial > 0) {
     if ((b->m_buff = (tj_buffer_byte *) malloc(initial)) == 0) {
-      TJ_ERROR("No memory for tj_buffer_byte[%d bytes].", initial);
+      TJ_ERROR("No memory for tj_buffer_byte[%zu bytes].", initial);
       b->m_n = 0;
     } else {
       b->m_n = initial;
@@ -90,7 +90,7 @@ tj_buffer_create(size_t initial)
   b->m_own = 1;
   b->m_used = 0;
 
-  TJ_LOG("Buffer[%d] created.", initial);
+  TJ_LOG("Buffer[%zu] created.", initial);
   return b;
   // end tj_buffer_create
 }
@@ -101,7 +101,7 @@ tj_buffer_finalize(tj_buffer *x)
   if (x->m_own && x->m_buff != 0)
     free(x->m_buff);
 
-  TJ_LOG("Buffer[%d] finalized.", x->m_n);
+  TJ_LOG("Buffer[%zu] finalized.", x->m_n);
   free(x);
   // end tj_buffer_finalize
 }
@@ -117,7 +117,7 @@ void
 tj_buffer_reset(tj_buffer *b)
 {
   b->m_used = 0;
-  TJ_LOG("Reset; buffer[%d/%d].", b->m_used, b->m_n);
+  TJ_LOG("Reset; buffer[%zu/%zu].", b->m_used, b->m_n);
   // end tj_buffer_reset
 }
 
@@ -168,7 +168,7 @@ tj_buffer_append(tj_buffer *b, tj_buffer_byte *data, size_t n)
   if (b->m_used + n > b->m_n) {
     if ((b->m_buff = (tj_buffer_byte *) realloc(ot=b->m_buff,
                                                b->m_used+n)) == 0) {
-      TJ_ERROR("Could not increase buffer from %d to %d.", b->m_n, b->m_used+n);
+      TJ_ERROR("Could not increase buffer from %zu to %zu.", b->m_n, b->m_used+n);
       b->m_buff = ot;
       return 0;
     }
@@ -178,7 +178,7 @@ tj_buffer_append(tj_buffer *b, tj_buffer_byte *data, size_t n)
   memcpy(&b->m_buff[b->m_used], data, n);
   b->m_used += n;
 
-  TJ_LOG("Appended %d bytes; buffer[%d/%d].", n, b->m_used, b->m_n);
+  TJ_LOG("Appended %zu bytes; buffer[%zu/%zu].", n, b->m_used, b->m_n);
   return 1;
   // end tj_buffer_append
 }
@@ -199,7 +199,7 @@ tj_buffer_appendString(tj_buffer *b, const char *str)
   if (b->m_used + n > b->m_n) {
     if ((b->m_buff = (tj_buffer_byte *) realloc(ot=b->m_buff,
                                                b->m_used+n)) == 0) {
-      TJ_ERROR("Could not increase buffer from %d to %d.", b->m_n, b->m_used+n);
+      TJ_ERROR("Could not increase buffer from %zu to %zu.", b->m_n, b->m_used+n);
       b->m_buff = ot;
       return 0;
     }
@@ -209,7 +209,8 @@ tj_buffer_appendString(tj_buffer *b, const char *str)
   memcpy(&b->m_buff[b->m_used], str, n);
   b->m_used += n;
 
-  TJ_LOG("Appended %d bytes from string; buffer[%d/%d].", n, b->m_used, b->m_n);
+  TJ_LOG("Appended %zu bytes from string; buffer[%zu/%zu].",
+	 (size_t) n, (size_t) b->m_used, (size_t) b->m_n);
   return 1;
   // end tj_buffer_appendString
 }
@@ -227,7 +228,7 @@ tj_buffer_appendAsString(tj_buffer *b, const char *str)
   if (b->m_used + n > b->m_n) {
     if ((b->m_buff = (tj_buffer_byte *) realloc(ot=b->m_buff,
                                                 b->m_used+n)) == 0) {
-      TJ_ERROR("Could not increase buffer from %d to %d.", b->m_n, b->m_used+n);
+      TJ_ERROR("Could not increase buffer from %zu to %zu.", b->m_n, b->m_used+n);
       b->m_buff = ot;
       return 0;
     }
@@ -241,7 +242,7 @@ tj_buffer_appendAsString(tj_buffer *b, const char *str)
   b->m_used += n;
 
 
-  TJ_LOG("Appended as string %d bytes from string; buffer[%d/%d].", n, b->m_used, b->m_n);
+  TJ_LOG("Appended as string %zu bytes from string; buffer[%zu/%zu].", n, b->m_used, b->m_n);
   return 1;
   // end tj_buffer_appendAsString
 }
@@ -258,7 +259,7 @@ tj_buffer_appendFileStream(tj_buffer *b, FILE *fh)
   // allocating all that memory at once so that stdin can be utilized.
   while (!feof(fh) && (bytes=fread(input, 1, TJ_PAGE_SIZE, fh)) != 0) {
     if (!tj_buffer_append(b, input, bytes)) {
-      TJ_ERROR("Could not append read page[%d/%d].", bytes, TJ_PAGE_SIZE);
+      TJ_ERROR("Could not append read page[%zu/%zu].", bytes, TJ_PAGE_SIZE);
       return -1;
     }
   }
