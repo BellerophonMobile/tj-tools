@@ -129,6 +129,7 @@ tj_template_variable_create(const char *label)
   }
 
   v->m_recurse = 0;
+  v->m_next = 0;
 
   return v;
   // end tj_template_variable_create

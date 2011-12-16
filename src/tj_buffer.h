@@ -59,6 +59,17 @@ void
 tj_buffer_finalize(tj_buffer *x);
 
 /*
+ * Set whether or not the buffer owns its data and should free it when
+ * the tj_buffer is finalized.
+ *
+ * \param b The buffer to operate on.
+ * \param own 0 for the buffer no longer owns and should not free its
+ * data, 1 otherwise.
+ */
+void
+tj_buffer_setOwnership(tj_buffer *b, char own);
+
+/*
  * Reset the buffer but do not release the memory.  Future calls to
  * tj_buffer_append() overwrite previous contents but reuse the
  * current memory allocation.

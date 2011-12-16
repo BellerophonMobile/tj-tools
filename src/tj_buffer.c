@@ -61,6 +61,7 @@ struct tj_buffer {
   tj_buffer_byte *m_buff;
   size_t m_used;
   size_t m_n;
+  char m_own;
 };
 
 //----------------------------------------------------------------------
@@ -86,6 +87,7 @@ tj_buffer_create(size_t initial)
     b->m_n = 0;
   }
 
+  b->m_own = 1;
   b->m_used = 0;
 
   TJ_LOG("Buffer[%d] created.", initial);
@@ -96,7 +98,7 @@ tj_buffer_create(size_t initial)
 void
 tj_buffer_finalize(tj_buffer *x)
 {
-  if (x->m_buff != 0)
+  if (x->m_own && x->m_buff != 0)
     free(x->m_buff);
 
   TJ_LOG("Buffer[%d] finalized.", x->m_n);
@@ -104,6 +106,12 @@ tj_buffer_finalize(tj_buffer *x)
   // end tj_buffer_finalize
 }
 
+void
+tj_buffer_setOwnership(tj_buffer *b, char own)
+{
+  b->m_own = own;
+  // end tj_buffer_setOwnership
+}
 
 void
 tj_buffer_reset(tj_buffer *b)
