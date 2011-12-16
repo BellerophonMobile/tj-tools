@@ -231,7 +231,7 @@ tj_template_variables_setFromFile(tj_template_variables *vars,
 
   if (!tj_template_variables_setFromFileStream(vars, label, fp)) {
     fclose(fp);
-    TJ_ERROR("Could not append file stream to template variable.");
+    TJ_ERROR("Could not append file to template variable.");
     return 0;
   }
 

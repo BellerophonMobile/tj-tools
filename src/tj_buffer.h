@@ -182,7 +182,7 @@ tj_buffer_appendAsString(tj_buffer *b, const char *str);
 
 
 /*
- * Read a file or file stream into a buffer.  The given file handle
+ * Read a file or file stream into the buffer.  The given file handle
  * can be a stream such as stdin, but the entire contents will be read
  * before the function returns.  Internally, the function reads bytes
  * in TJ_PAGE_SIZE sized chunks, which may be redefined at compile
@@ -198,5 +198,19 @@ tj_buffer_appendAsString(tj_buffer *b, const char *str);
  */
 int
 tj_buffer_appendFileStream(tj_buffer *b, FILE *fh);
+
+/*
+ * Read a file into the buffer.  The given filename is opened in
+ * binary mode and read in using tj_buffer_appendFileStream().  The
+ * same notes about null terminators apply.
+ *
+ * \param b The buffer to operate on.
+ * \param fh Filename to open.
+ *
+ * \return 0 on failure, 1 otherwise.
+ */
+
+int
+tj_buffer_appendFile(tj_buffer *b, const char *filename);
 
 #endif // __tj_buffer_h__

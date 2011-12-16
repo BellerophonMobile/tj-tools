@@ -167,6 +167,28 @@ main(int argc, char *argv[])
     fclose(f);
   }
 
+  //--------------------------------------------
+  tj_buffer_reset(buff1);
+
+  if ((f=fopen(argv[0], "rb")) == 0) {
+    FAIL("Could not read test file %s.", argv[0]);
+  } else {
+    fseek(f, 0L, SEEK_END);
+    size_t flen = ftell(f);
+    fseek(f, 0L, SEEK_SET);
+    fclose(f);
+
+    tj_buffer_appendFile(buff1, argv[0]);
+
+    if (tj_buffer_getUsed(buff1) != flen)
+      FAIL("Read %d bytes from %s, expected %d.",
+           tj_buffer_getUsed(buff1), argv[0], flen);
+
+    printf("Read %s; buffer[%d/%d]\n", argv[0],
+           tj_buffer_getUsed(buff1), tj_buffer_getAllocated(buff1));
+  }
+
+  //--------------------------------------------
   tj_buffer_finalize(buff1);
 
   if (fail) {

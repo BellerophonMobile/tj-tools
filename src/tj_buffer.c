@@ -258,3 +258,23 @@ tj_buffer_appendFileStream(tj_buffer *b, FILE *fh)
   return 1;
   // end ontonet_util_readFile
 }
+
+int
+tj_buffer_appendFile(tj_buffer *b, const char *filename)
+{
+  FILE *fp;
+  if ((fp = fopen(filename, "rb")) == 0) {
+    TJ_ERROR("Could not open file %s for read.", filename);
+  }
+
+  if (!tj_buffer_appendFileStream(b, fp)) {
+    fclose(fp);
+    TJ_ERROR("Could not append file to buffer.");
+    return 0;
+  }
+
+  fclose(fp);
+
+  return 1;
+  // end tj_buffer_appendFile
+}
