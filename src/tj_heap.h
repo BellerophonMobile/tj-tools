@@ -63,7 +63,8 @@
   int (*type##_cmp)(keytype a, keytype b) = &comparator;                \
   type *                                                                \
   type##_create(int initial)                                            \
-  { type *t;                                                            \
+  {                                                                     \
+    type *t;                                                            \
     if ((t = malloc(sizeof(type))) == 0) {                              \
       TJ_ERROR("Could not allocate " #type ".");                        \
       return 0;                                                         \
@@ -75,6 +76,7 @@
     }                                                                   \
     t->m_n = initial;                                                   \
     t->m_used = 0;                                                      \
+    return t;                                                           \
   }                                                                     \
   void                                                                  \
   type##_finalize(type *x)                                              \
@@ -82,34 +84,75 @@
     free(x->m_array);                                                   \
     free(x);                                                            \
   }                                                                     \
-int\
- type##_add(type *h, keytype k, valuetype v)                         \
-{\
-  TJ_LOG("Adding key.");\
-  if (h->m_used == h->m_n) {\
-  type##_element *oa;\
-  if ((h->m_array = realloc(oa=h->m_array, sizeof(type##_element) * (h->m_n*2))) == 0) { \
-      TJ_ERROR("Could not reallocate " #type "_element[%d].", h->m_n*2);   \
-      h->m_array = oa;\
-      return 0;                                                         \
+  int                                                                   \
+  type##_add(type *h, keytype k, valuetype v)                           \
+  {                                                                     \
+    if (h->m_used == h->m_n) {                                          \
+      type##_element *oa;                                               \
+      if ((h->m_array = realloc(oa=h->m_array,                          \
+                                sizeof(type##_element) *                \
+                                (h->m_n*2))) == 0) {                    \
+        TJ_ERROR("Could not reallocate " #type "_element[%d].",         \
+                 h->m_n*2);                                             \
+        h->m_array = oa;                                                \
+        return 0;                                                       \
+      }                                                                 \
+      h->m_n *= 2;                                                      \
     }                                                                   \
-h->m_n *= 2;\
-}\
-size_t newindex = h->m_used, parentindex = h->m_used/2;\
-while (newindex > 0 && type##_cmp(k, h->m_array[parentindex].m_key)) {\
- TJ_LOG("n %d, p %d", newindex, parentindex);\
-  h->m_array[newindex].m_key = h->m_array[parentindex].m_key;\
-  h->m_array[newindex].m_value = h->m_array[parentindex].m_value;\
-  newindex = parentindex;\
-  parentindex = newindex/2;\
- }\
-h->m_array[newindex].m_key = k;\
-h->m_array[newindex].m_value = v;\
- h->m_used++;\
-return 0;\
-}
+    size_t newindex = h->m_used, parentindex = h->m_used/2;             \
+    while (newindex>0 && type##_cmp(k,h->m_array[parentindex].m_key)) { \
+      h->m_array[newindex].m_key = h->m_array[parentindex].m_key;       \
+      h->m_array[newindex].m_value = h->m_array[parentindex].m_value;   \
+      newindex = parentindex;                                           \
+      parentindex = newindex/2;                                         \
+    }                                                                   \
+    h->m_array[newindex].m_key = k;                                     \
+    h->m_array[newindex].m_value = v;                                   \
+    h->m_used++;                                                        \
+    return 1;                                                           \
+  }                                                                     \
+  int                                                                   \
+  type##_peek(type *h, keytype *k, valuetype *v)                        \
+  {                                                                     \
+    if (h->m_used == 0) return 0;                                       \
+    (*k)=h->m_array[0].m_key;                                           \
+    (*v)=h->m_array[0].m_value;                                         \
+    return 1;                                                           \
+  }                                                                     \
+  int                                                                   \
+  type##_pop(type *h, keytype *k, valuetype *v)                         \
+  {                                                                     \
+    if (h->m_used == 0) return 0;                                       \
+    (*k)=h->m_array[0].m_key;                                           \
+    (*v)=h->m_array[0].m_value;                                         \
+    h->m_used--;                                                        \
+    h->m_array[0].m_key = h->m_array[h->m_used].m_key;                  \
+    h->m_array[0].m_value = h->m_array[h->m_used].m_value;              \
+    if (h->m_used > 1) {                                                \
+      int root = 0, child = 1;                                          \
+      keytype kt;                                                       \
+      valuetype vt;                                                     \
+      do {                                                              \
+        if (child < h->m_used - 1 &&                                    \
+            type##_cmp(h->m_array[child+1].m_key,                       \
+                       h->m_array[child].m_key))                        \
+          child++;                                                      \
+        if (type##_cmp(h->m_array[root].m_key,                          \
+                       h->m_array[child].m_key)) break;                 \
+        kt = h->m_array[root].m_key;                                    \
+        h->m_array[root].m_key = h->m_array[child].m_key;               \
+        h->m_array[child].m_key = kt;                                   \
+        vt = h->m_array[root].m_value;                                  \
+        h->m_array[root].m_value = h->m_array[child].m_value;           \
+        h->m_array[child].m_value = vt;                                 \
+        root = child;                                                   \
+        child = (root*2) + 1;                                           \
+      } while (child < h->m_used);                                      \
+    }                                                                   \
+    return 1;                                                           \
+  }
 
 //----------------------------------------------
-#define TJ_HEAP_IMPL(type)                                              \
+#define TJ_HEAP_IMPL(type)
 
 #endif // __tj_heap_h__

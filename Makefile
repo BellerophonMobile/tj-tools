@@ -41,13 +41,14 @@ dirs:
 
 #-----------------------------------------------------------------------
 
-bin/test-tj_buffer: test/test-tj_buffer.c src/tj_buffer.c
+bin/test-tj_buffer: test/test-tj_buffer.c src/tj_buffer.c src/tj_buffer.h
 	$(CC) $(CFLAGS) -o $@ $^ $(INCS)
 
-bin/test-tj_template: test/test-tj_template.c src/tj_template.c src/tj_buffer.c
+bin/test-tj_template: test/test-tj_template.c src/tj_template.c src/tj_buffer.c\
+                      src/tj_template.h src/tj_buffer.h
 	$(CC) $(CFLAGS) -o $@ $^ $(INCS)
 
-bin/test-tj_heap: test/test-tj_heap.c src/tj_heap.c
+bin/test-tj_heap: test/test-tj_heap.c src/tj_heap.h
 	$(CC) $(CFLAGS) -o $@ $^ $(INCS)
 
 

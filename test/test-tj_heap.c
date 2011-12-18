@@ -33,12 +33,11 @@ int fail = 0;
 
 #define FAIL(M, ...) {fail = 1; printf("FAIL: " M "\n", ##__VA_ARGS__);}
 
-int less(int a, int b) { return a  < b; }
+int intless(int a, int b) { return a  < b; }
+TJ_HEAP_DECL(intheap, int, char *, intless);
 
-TJ_HEAP_DECL(myheap, int, char *, less);
-
-TJ_HEAP_IMPL(myheap);
-
+int floatmore(float a, float b) { return a  > b; }
+TJ_HEAP_DECL(floatheap, float, char *, floatmore);
 
 int
 main(int argc, char *argv[])
@@ -46,43 +45,58 @@ main(int argc, char *argv[])
 
   // Skipping the error checking...
 
-  myheap *heap = myheap_create(4);
+  //----------------------------------------------------
+  intheap *heap = intheap_create(4);
 
-  myheap_add(heap, 234, "mushi");
-  myheap_add(heap, 23, "foobar");
-  myheap_add(heap, 467, "sushi");
+  int k;
+  char *v;
 
+  intheap_add(heap, 923, "ddd");
+  intheap_add(heap, 467, "sushi");
+  intheap_add(heap, 23, "foobar");
+  intheap_add(heap, 500, "ccc");
+  intheap_add(heap, 23, "yyy");
+  intheap_add(heap, 234, "mushi");
+  intheap_add(heap, 900, "aaa");
+  intheap_add(heap, 90, "eee");
+  intheap_add(heap, 500, "xxx");
+  intheap_add(heap, 80, "bbb");
 
-
-  int i;
-  for (i = 0; i < heap->m_used; i++) {
-    printf("%d\n", heap->m_array[i].m_key);
+  printf("Integer min heap.\n");
+  if (intheap_peek(heap, &k, &v)) {
+    printf("Peek %4d %6s\n", k, v);
   }
-  myheap_finalize(heap);
 
-  //--------------------------------------------
-  //  heap = tj_heap_create(24);
+  while (intheap_pop(heap, &k, &v)) {
+    printf("  %4d %6s\n", k, v);
+  }
+  printf("\n");
 
-  /*
-Algorithm add(newEntry)
-if (the array heap is full)
-	Double the size of the array
-newIndex = index of next available array location
-parentIndex = newIndex/2 // index of parent of available location
-while (newEntry > heap[parentIndex])
-{	heap[newIndex] = heap[parentIndex] 
-	// move parent to available location
-	// update indices
-	newIndex = parentIndex
-	parentIndex = newIndex/2
-} // end while
-  */
+  intheap_finalize(heap);
 
+  //----------------------------------------------------
+  floatheap *fheap = floatheap_create(8);
+  floatheap_add(fheap, 2.4, "2.4");
+  floatheap_add(fheap, 0.3, "0.3");
+  floatheap_add(fheap, 0.7, "0.7");
+  floatheap_add(fheap, 7.8, "7.8");
+  floatheap_add(fheap, 4.0, "4.0");
 
+  float f;
 
-  //--------------------------------------------
-     //  tj_heap_finalize(heap);
+  printf("Float max heap.\n");
+  if (floatheap_peek(fheap, &f, &v)) {
+    printf("Peek %4f %6s\n", f, v);
+  }
 
+  while (floatheap_pop(fheap, &f, &v)) {
+    printf("  %4f %6s\n", f, v);
+  }
+  printf("\n");
+
+  floatheap_finalize(fheap);
+
+  //----------------------------------------------------
   if (fail) {
     printf("** There were errors.\n");
     return -1;
