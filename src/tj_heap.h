@@ -92,7 +92,7 @@
       if ((h->m_array = realloc(oa=h->m_array,                          \
                                 sizeof(type##_element) *                \
                                 (h->m_n*2))) == 0) {                    \
-        TJ_ERROR("Could not reallocate " #type "_element[%d].",         \
+        TJ_ERROR("Could not reallocate " #type "_element[%lu].",         \
                  h->m_n*2);                                             \
         h->m_array = oa;                                                \
         return 0;                                                       \
