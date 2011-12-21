@@ -158,10 +158,10 @@ main(int argc, char *argv[])
     tj_buffer_appendFileStream(buff1, f);
 
     if (tj_buffer_getUsed(buff1) != flen)
-      FAIL("Read %d bytes from %s, expected %d.",
+      FAIL("Read %lu bytes from %s, expected %lu.",
            tj_buffer_getUsed(buff1), argv[0], flen);
 
-    printf("Read %s; buffer[%d/%d]\n", argv[0],
+    printf("Read %s; buffer[%lu/%lu]\n", argv[0],
            tj_buffer_getUsed(buff1), tj_buffer_getAllocated(buff1));
 
     fclose(f);
@@ -181,10 +181,10 @@ main(int argc, char *argv[])
     tj_buffer_appendFile(buff1, argv[0]);
 
     if (tj_buffer_getUsed(buff1) != flen)
-      FAIL("Read %d bytes from %s, expected %d.",
+      FAIL("Read %lu bytes from %s, expected %lu.",
            tj_buffer_getUsed(buff1), argv[0], flen);
 
-    printf("Read %s; buffer[%d/%d]\n", argv[0],
+    printf("Read %s; buffer[%lu/%lu]\n", argv[0],
            tj_buffer_getUsed(buff1), tj_buffer_getAllocated(buff1));
   }
 

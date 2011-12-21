@@ -34,6 +34,7 @@ int fail = 0;
 #define FAIL(M, ...) {fail = 1; printf("FAIL: " M "\n", ##__VA_ARGS__);}
 
 int intless(int a, int b) { return a  < b; }
+int intfind(void *d, int k, char *v) { return (strcmp(v, d) == 0); }
 TJ_HEAP_DECL(intheap, int, char *, intless);
 
 int floatmore(float a, float b) { return a  > b; }
@@ -51,16 +52,17 @@ main(int argc, char *argv[])
   int k;
   char *v;
 
-  intheap_add(heap, 923, "ddd");
-  intheap_add(heap, 467, "sushi");
-  intheap_add(heap, 23, "foobar");
-  intheap_add(heap, 500, "ccc");
-  intheap_add(heap, 23, "yyy");
-  intheap_add(heap, 234, "mushi");
-  intheap_add(heap, 900, "aaa");
-  intheap_add(heap, 90, "eee");
-  intheap_add(heap, 500, "xxx");
-  intheap_add(heap, 80, "bbb");
+  intheap_add(heap, 923, "h");
+  intheap_add(heap, 467, "d");
+  intheap_add(heap, 23, "a1");
+  intheap_add(heap, 500, "f1");
+  intheap_add(heap, 23, "a2");
+  intheap_add(heap, 234, "d");
+  intheap_add(heap, 468, "e");
+  intheap_add(heap, 900, "g");
+  intheap_add(heap, 90, "c");
+  intheap_add(heap, 500, "f2");
+  intheap_add(heap, 80, "b");
 
   printf("Integer min heap.\n");
   if (intheap_peek(heap, &k, &v)) {
@@ -95,6 +97,48 @@ main(int argc, char *argv[])
   printf("\n");
 
   floatheap_finalize(fheap);
+
+  //----------------------------------------------------
+  heap = intheap_create(4);
+
+  intheap_add(heap, 923, "d");
+  intheap_add(heap, 467, "b");
+  intheap_add(heap, 23, "a");
+  intheap_add(heap, 500, "c");
+
+  k = intheap_find(heap, &intfind, "a");
+  if (k == -1) {
+    printf("Could not find a.\n");
+  } else {
+    printf("Found foobar at %d.\n", k);
+    intheap_remove(heap, k, &k, &v);
+    printf("Removed %d:%s.\n", k, v);
+  }
+
+  k = intheap_find(heap, &intfind, "c");
+  if (k == -1) {
+    printf("Could not find a.\n");
+  } else {
+    printf("Found foobar at %d.\n", k);
+    intheap_remove(heap, k, &k, &v);
+    printf("Removed %d:%s.\n", k, v);
+  }
+
+  k = intheap_find(heap, &intfind, "x");
+  if (k == -1) {
+    printf("Could not find x.\n");
+  } else {
+    printf("Found foobar at %d.\n", k);
+    intheap_remove(heap, k, &k, &v);
+    printf("Removed %d:%s.\n", k, v);
+  }
+
+  while (intheap_pop(heap, &k, &v)) {
+    printf("  %4d %6s\n", k, v);
+  }
+  printf("\n");
+
+  intheap_finalize(heap);
 
   //----------------------------------------------------
   if (fail) {

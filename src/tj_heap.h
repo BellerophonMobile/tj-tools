@@ -92,7 +92,7 @@
       if ((h->m_array = realloc(oa=h->m_array,                          \
                                 sizeof(type##_element) *                \
                                 (h->m_n*2))) == 0) {                    \
-        TJ_ERROR("Could not reallocate " #type "_element[%lu].",         \
+        TJ_ERROR("Could not reallocate " #type "_element[%lu].",        \
                  h->m_n*2);                                             \
         h->m_array = oa;                                                \
         return 0;                                                       \
@@ -120,16 +120,16 @@
     return 1;                                                           \
   }                                                                     \
   int                                                                   \
-  type##_pop(type *h, keytype *k, valuetype *v)                         \
+  type##_remove(type *h, int index, keytype *k, valuetype *v)		\
   {                                                                     \
-    if (h->m_used == 0) return 0;                                       \
-    (*k)=h->m_array[0].m_key;                                           \
-    (*v)=h->m_array[0].m_value;                                         \
+    if (index >= h->m_used || index < 0) return 0;                      \
+    (*k)=h->m_array[index].m_key;                                       \
+    (*v)=h->m_array[index].m_value;                                     \
     h->m_used--;                                                        \
-    h->m_array[0].m_key = h->m_array[h->m_used].m_key;                  \
-    h->m_array[0].m_value = h->m_array[h->m_used].m_value;              \
-    if (h->m_used > 1) {                                                \
-      int root = 0, child = 1;                                          \
+    h->m_array[index].m_key = h->m_array[h->m_used].m_key;              \
+    h->m_array[index].m_value = h->m_array[h->m_used].m_value;          \
+    if ((index*2)+1 < h->m_used) {					\
+      int root = index, child = (root*2)+1;				\
       keytype kt;                                                       \
       valuetype vt;                                                     \
       do {                                                              \
@@ -150,6 +150,23 @@
       } while (child < h->m_used);                                      \
     }                                                                   \
     return 1;                                                           \
+  }                                                                     \
+  int                                                                   \
+  type##_pop(type *h, keytype *k, valuetype *v)                         \
+  {                                                                     \
+    return type##_remove(h, 0, k, v);                                   \
+  }                                                                     \
+  int                                                                   \
+  type##_find(type *h, int (*test)(void *h, keytype k, valuetype v),    \
+             void *data)                                                \
+  {                                                                     \
+    int i = 0;                                                          \
+    while (i < h->m_used &&                                             \
+           !test(data, h->m_array[i].m_key, h->m_array[i].m_value))     \
+      i++;                                                              \
+    if (i == h->m_used)                                                 \
+      return -1;                                                        \
+    return i;                                                           \
   }
 
 //----------------------------------------------
