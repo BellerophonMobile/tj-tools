@@ -27,14 +27,12 @@
 
 #include <stdio.h>
 
-// #include <uthash.h>
-
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 typedef unsigned char           tj_buffer_byte;
 typedef struct tj_buffer        tj_buffer;
 
-/*
+/**
  * Create a tj_buffer.  Data can be added to a tj_buffer and it will
  * grow, if possible, to accommodate.  The buffer can then be reset
  * and the memory reused.  Note that none of the tj_buffer operations
@@ -49,7 +47,7 @@ typedef struct tj_buffer        tj_buffer;
 tj_buffer *
 tj_buffer_create(size_t initial);
 
-/*
+/**
  * Destroys a buffer and frees its memory.  Behavior of any future
  * calls on the buffer are undefined, but will probably segfault.
  *
@@ -58,7 +56,7 @@ tj_buffer_create(size_t initial);
 void
 tj_buffer_finalize(tj_buffer *x);
 
-/*
+/**
  * Set whether or not the buffer owns its data and should free it when
  * the tj_buffer is finalized.
  *
@@ -69,7 +67,7 @@ tj_buffer_finalize(tj_buffer *x);
 void
 tj_buffer_setOwnership(tj_buffer *b, char own);
 
-/*
+/**
  * Reset the buffer but do not release the memory.  Future calls to
  * tj_buffer_append() overwrite previous contents but reuse the
  * current memory allocation.
@@ -79,7 +77,7 @@ tj_buffer_setOwnership(tj_buffer *b, char own);
 void
 tj_buffer_reset(tj_buffer *b);
 
-/*
+/**
  * Get the currently used extent of the buffer.
  *
  * \param b The buffer to operate on.
@@ -90,7 +88,7 @@ tj_buffer_reset(tj_buffer *b);
 size_t
 tj_buffer_getUsed(tj_buffer *b);
 
-/*
+/**
  * Get how much memory is currently allocated for the buffer.
  * 
  * \param b The buffer to operate on.
@@ -101,7 +99,7 @@ tj_buffer_getUsed(tj_buffer *b);
 size_t
 tj_buffer_getAllocated(tj_buffer *b);
 
-/*
+/**
  * Get a pointer to the internal byte array.
  *
  * \param b The buffer to operate on.
@@ -111,9 +109,10 @@ tj_buffer_getAllocated(tj_buffer *b);
 tj_buffer_byte *
 tj_buffer_getBytes(tj_buffer *b);
 
-/*
+/**
  * Get a pointer to the internal byte array as a string.  Same as
- * (char *) tj_buffer_getBytes(b).
+ * (char *) tj_buffer_getBytes(b).  This does not ensure a null
+ * terminator is present.
  *
  * \param b The buffer to operate on.
  *
@@ -122,7 +121,7 @@ tj_buffer_getBytes(tj_buffer *b);
 char *
 tj_buffer_getAsString(tj_buffer *b);
 
-/*
+/**
  * Get a pointer to the internal byte array from a given position.
  * This is no different from tj_buffer_getBytes(b)+i.
  *
@@ -133,7 +132,7 @@ tj_buffer_getAsString(tj_buffer *b);
 tj_buffer_byte *
 tj_buffer_getBytesAtIndex(tj_buffer *b, size_t i);
 
-/*
+/**
  * Write data into a buffer, growing its memory allocation if
  * necessary.  The new data is pushed onto the end of the buffer.  If
  * the internal memory allocation cannot be grown to encompass all of
@@ -149,13 +148,19 @@ tj_buffer_getBytesAtIndex(tj_buffer *b, size_t i);
 int
 tj_buffer_append(tj_buffer *b, tj_buffer_byte *data, size_t n);
 
-/*
+/**
+ * Appends the used extent of s into b.  Follows the same memory rules
+ * as tj_buffer_append().
  *
+ * \param b The buffer to operate on.
+ * \param s The buffer providing data to append.
+ *
+ * \return 0 on failure, 1 otherwise.
  */
 int
 tj_buffer_appendBuffer(tj_buffer *b, tj_buffer *s);
 
-/*
+/**
  * Add a string to the end of the buffer, including the null
  * terminator, growing the buffer allocation if necessary.  If the
  * internal memory allocation cannot be grown to encompass all of the
@@ -174,7 +179,7 @@ tj_buffer_appendBuffer(tj_buffer *b, tj_buffer *s);
 int
 tj_buffer_appendString(tj_buffer *b, const char *str);
 
-/*
+/**
  * Add a string to the end of the buffer, including the null
  * terminator, growing the buffer allocation if necessary.  If the
  * internal memory allocation cannot be grown to encompass all of the
@@ -192,7 +197,7 @@ int
 tj_buffer_appendAsString(tj_buffer *b, const char *str);
 
 
-/*
+/**
  * Read a file or file stream into the buffer.  The given file handle
  * can be a stream such as stdin, but the entire contents will be read
  * before the function returns.  Internally, the function reads bytes
@@ -210,7 +215,7 @@ tj_buffer_appendAsString(tj_buffer *b, const char *str);
 int
 tj_buffer_appendFileStream(tj_buffer *b, FILE *fh);
 
-/*
+/**
  * Read a file into the buffer.  The given filename is opened in
  * binary mode and read in using tj_buffer_appendFileStream().  The
  * same notes about null terminators apply.
@@ -220,7 +225,6 @@ tj_buffer_appendFileStream(tj_buffer *b, FILE *fh);
  *
  * \return 0 on failure, 1 otherwise.
  */
-
 int
 tj_buffer_appendFile(tj_buffer *b, const char *filename);
 

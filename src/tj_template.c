@@ -108,7 +108,6 @@ tj_template_variables_finalize(tj_template_variables *vars)
 tj_template_variable *
 tj_template_variable_create(const char *label)
 {
-  TJ_LOG("New template variable %s.", label);
   tj_template_variable *v;
   if ((v = malloc(sizeof(tj_template_variable))) == 0) {
     TJ_ERROR("No memory for tj_template_variable.");
@@ -138,7 +137,6 @@ tj_template_variable_create(const char *label)
 void
 tj_template_variable_finalize(tj_template_variable *x)
 {
-  TJ_LOG("Finalizing %s.", x->m_label);
   tj_buffer_finalize(x->m_substitution);
   free(x->m_label);
   free(x);

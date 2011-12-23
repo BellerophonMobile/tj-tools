@@ -53,6 +53,7 @@ main(int argc, char *argv[])
     FAIL("Did not get expected accumulated string.");
   }
 
+
   //------------------------------------------------------------
   tj_template_variables_finalize(vars);
   vars = tj_template_variables_create();

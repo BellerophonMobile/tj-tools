@@ -53,6 +53,11 @@
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 
+/**
+ * See documentation in the tj-tools wiki on how to use a tj_heap.
+ *           http://code.google.com/p/tj-tools/wiki/tj_heap
+ */
+
 #define TJ_HEAP_DECL(type, keytype, valuetype, comparator)              \
   typedef struct { keytype m_key;                                       \
                    valuetype m_value;                                   \
@@ -92,7 +97,7 @@
       if ((h->m_array = realloc(oa=h->m_array,                          \
                                 sizeof(type##_element) *                \
                                 (h->m_n*2))) == 0) {                    \
-        TJ_ERROR("Could not reallocate " #type "_element[%lu].",        \
+        TJ_ERROR("Could not reallocate " #type "_element[%zu].",        \
                  h->m_n*2);                                             \
         h->m_array = oa;                                                \
         return 0;                                                       \

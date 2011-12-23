@@ -110,7 +110,7 @@ main(int argc, char *argv[])
   if (k == -1) {
     printf("Could not find a.\n");
   } else {
-    printf("Found foobar at %d.\n", k);
+    printf("Found a at %d.\n", k);
     intheap_remove(heap, k, &k, &v);
     printf("Removed %d:%s.\n", k, v);
   }
@@ -119,7 +119,7 @@ main(int argc, char *argv[])
   if (k == -1) {
     printf("Could not find a.\n");
   } else {
-    printf("Found foobar at %d.\n", k);
+    printf("Found c at %d.\n", k);
     intheap_remove(heap, k, &k, &v);
     printf("Removed %d:%s.\n", k, v);
   }
@@ -128,7 +128,7 @@ main(int argc, char *argv[])
   if (k == -1) {
     printf("Could not find x.\n");
   } else {
-    printf("Found foobar at %d.\n", k);
+    printf("Found x at %d.\n", k);
     intheap_remove(heap, k, &k, &v);
     printf("Removed %d:%s.\n", k, v);
   }
