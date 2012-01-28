@@ -35,6 +35,10 @@ void
 tj_solibrary_finalize(tj_solibrary *x);
 
 tj_solibrary_entry *
+tj_solibrary_getNext(tj_solibrary *x, tj_solibrary_entry *e);
+
+
+tj_solibrary_entry *
 tj_solibrary_load(tj_solibrary *x, char *fn);
 
 void *

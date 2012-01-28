@@ -102,6 +102,16 @@ tj_solibrary_finalize(tj_solibrary *x)
 }
 
 tj_solibrary_entry *
+tj_solibrary_getNext(tj_solibrary *x, tj_solibrary_entry *e)
+{
+  if (e == 0)
+    return x->m_list;
+
+  return e->next;
+  // end tj_solibrary_getNext
+}
+
+tj_solibrary_entry *
 tj_solibrary_load(tj_solibrary *x, char *fn)
 {
   char *error;
