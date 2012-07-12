@@ -54,7 +54,6 @@
 
 #define TJ_ERROR_OK (0)
 
-typedef enum tj_error_code tj_error_code;
 enum tj_error_code {
   TJ_ERROR_NO_ERROR,
   TJ_ERROR_FAILURE,
@@ -68,6 +67,7 @@ enum tj_error_code {
   TJ_ERROR_DATABASE,
   TJ_ERROR_THREAD
 };
+typedef enum tj_error_code tj_error_code;
 
 
 //----------------------------------------------------------------------
