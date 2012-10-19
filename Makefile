@@ -28,6 +28,7 @@ CFLAGS+=-g -Wall
 TESTS=test-tj_buffer   \
       test-tj_template \
       test-tj_heap     \
+      test-tj_log      \
       test-tj_error
 
 TEST_SRCS=$(addsuffix .c,$(addprefix test/,$(TESTS)))
@@ -40,20 +41,32 @@ dirs:
 	@if [ ! -e obj ]; then mkdir -p obj; fi
 	@if [ ! -e bin ]; then mkdir -p bin; fi
 
+
 #-----------------------------------------------------------------------
 
-bin/test-tj_buffer: test/test-tj_buffer.c src/tj_buffer.c src/tj_buffer.h
+bin/test-tj_buffer: test/test-tj_buffer.c                              \
+                    src/tj_buffer.c src/tj_buffer.h
 	$(CC) $(CFLAGS) -o $@ $^ $(INCS)
 
-bin/test-tj_template: test/test-tj_template.c src/tj_template.c src/tj_buffer.c\
+bin/test-tj_template: test/test-tj_template.c                          \
+                      src/tj_template.c src/tj_buffer.c                \
                       src/tj_template.h src/tj_buffer.h
 	$(CC) $(CFLAGS) -o $@ $^ $(INCS)
 
-bin/test-tj_heap: test/test-tj_heap.c src/tj_heap.h
+bin/test-tj_heap: test/test-tj_heap.c                                  \
+                  src/tj_heap.h
 	$(CC) $(CFLAGS) -o $@ $^ $(INCS)
 
-bin/test-tj_error: test/test-tj_error.c src/tj_error.c src/tj_error.h
+bin/test-tj_log: test/test-tj_log.c                                    \
+                 src/tj_error.c src/tj_log.c src/tj_log_sqlite.c       \
+                 src/tj_error.h src/tj_log.h src/tj_log_sqlite.h
+	$(CC) $(CFLAGS) -o $@ $^ $(INCS) -lsqlite3
+
+bin/test-tj_error: test/test-tj_error.c                                \
+                   src/tj_error.c                                      \
+                   src/tj_error.h
 	$(CC) $(CFLAGS) -o $@ $^ $(INCS)
+
 
 #-----------------------------------------------------------------------
 .PHONY: clean doxygen attribute

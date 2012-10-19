@@ -3,3 +3,4 @@ doxygen/
 obj/
 bin/
 *~
+tj_log.db

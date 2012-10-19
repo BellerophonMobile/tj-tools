@@ -97,8 +97,8 @@ main(int argc, char *argv[])
   tj_buffer_reset(buff1);
 
   FILE *f;
-  if ((f=fopen("test/mushi", "r")) == 0) {
-    FAIL("Could not read test file test/mushi.");
+  if ((f=fopen("test/data/mushi", "r")) == 0) {
+    FAIL("Could not read test file test/data/mushi.");
   } else {
     tj_buffer_appendFileStream(buff1, f);
     fclose(f);
@@ -113,26 +113,26 @@ main(int argc, char *argv[])
   //--------------------------------------------
   tj_buffer_reset(buff1);
 
-  if ((f=fopen("test/mushi", "r")) == 0) {
-    FAIL("Could not read test file test/mushi.");
+  if ((f=fopen("test/data/mushi", "r")) == 0) {
+    FAIL("Could not read test file test/data/mushi.");
   } else {
     tj_buffer_appendFileStream(buff1, f);
     fclose(f);
   }
-  if ((f=fopen("test/mushi", "r")) == 0) {
-    FAIL("Could not read test file test/mushi.");
+  if ((f=fopen("test/data/mushi", "r")) == 0) {
+    FAIL("Could not read test file test/data/mushi.");
   } else {
     tj_buffer_appendFileStream(buff1, f);
     fclose(f);
   }
-  if ((f=fopen("test/mushi", "r")) == 0) {
-    FAIL("Could not read test file test/mushi.");
+  if ((f=fopen("test/data/mushi", "r")) == 0) {
+    FAIL("Could not read test file test/data/mushi.");
   } else {
     tj_buffer_appendFileStream(buff1, f);
     fclose(f);
   }
-  if ((f=fopen("test/mushi", "r")) == 0) {
-    FAIL("Could not read test file test/mushi.");
+  if ((f=fopen("test/data/mushi", "r")) == 0) {
+    FAIL("Could not read test file test/data/mushi.");
   } else {
     tj_buffer_appendFileStream(buff1, f);
     fclose(f);

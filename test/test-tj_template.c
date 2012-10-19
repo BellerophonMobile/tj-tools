@@ -83,7 +83,7 @@ main(int argc, char *argv[])
   tj_buffer_reset(src);
   tj_buffer_appendString(src, "$MUSHI");
 
-  tj_template_variables_setFromFile(vars, "MUSHI", "test/mushi");
+  tj_template_variables_setFromFile(vars, "MUSHI", "test/data/mushi");
 
   tj_template_variables_apply(vars, target, src);
 
@@ -102,7 +102,7 @@ main(int argc, char *argv[])
   tj_buffer_appendString(src, "$MUSHI");
 
   tj_template_variables_setFromString(vars, "X", "mushi");
-  tj_template_variables_setFromFile(vars, "MUSHI", "test/mushi2");
+  tj_template_variables_setFromFile(vars, "MUSHI", "test/data/mushi2");
   tj_template_variables_setRecurse(vars, "MUSHI", 1);
 
   tj_template_variables_apply(vars, target, src);
