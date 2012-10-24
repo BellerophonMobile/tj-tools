@@ -22,14 +22,18 @@
  * SOFTWARE.
  */
 
+/**
+ * If TAG is defined, the tj_log.h header will define shorthand macros
+ * such as CRITICAL and VERBOSE.  The full ones remain available.
+ */
+#define TAG "test-tj_log"
+#include <tj_log.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <tj_error.h>
-#include <tj_log.h>
-
+// Defines an option log output channel
 #include <tj_log_sqlite.h>
 
 
@@ -40,6 +44,12 @@ main(int argc, char *argv[])
 {
   char *component = argv[0];
 
+  /*
+   * This shows how to add an optional output to logging.  A printer
+   * to stdout is the default (logcat on Android).  There can be any
+   * number of output channels.  This one uses as SQLite database.
+   *
+   */
   tj_log_outchannel *chan;
   if ((chan = tj_log_sqlite_create(0)) == 0) {
     TJ_LOG_CRITICAL(component, "Could not create sqlite outchannel.");
@@ -48,13 +58,21 @@ main(int argc, char *argv[])
   tj_log_addOutChannel(chan);
 
 
+  /*
+   * TODO: Ability to remove channels (i.e., the default).
+   * TODO: Component filters and remapping.
+   */
+
+
   TJ_LOG_VERBOSE(component, "This is a verbose output.");
 
-  TJ_LOG_LOGIC(component, "This is a logic output.");
+  TJ_LOG_LOGIC(component, "This is a logic output: Result is %d.", 4);
 
-  TJ_LOG_COMPONENT(component, "This is a component output.");
+  // Use the shorthand form.
+  COMPONENT("This is a component output with string '%s'.", "mushi");
 
-  TJ_LOG_CRITICAL(component, "This is a critical error output.");
+  // Use the shorthand form.
+  CRITICAL("This is a critical error output.");
 
   tj_error *err = tj_error_create(TJ_ERROR_MISSING_SERVICE, "Bad mojo!");
   TJ_LOG_ERROR(component, err,
