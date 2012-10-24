@@ -86,6 +86,15 @@ typedef enum {
 #endif
 
 
+#ifdef TAG
+#define VERBOSE(msg, ...) TJ_LOG_VERBOSE(TAG, msg, ##__VA_ARGS__)
+#define LOGIC(msg, ...) TJ_LOG_LOGIC(TAG, msg, ##__VA_ARGS__)
+#define COMPONENT(msg, ...) TJ_LOG_COMPONENT(TAG, msg, ##__VA_ARGS__)
+#define CRITICAL(msg, ...) TJ_LOG_CRITICAL(TAG, msg, ##__VA_ARGS__)
+#define ERROR(e, msg, ...) TJ_LOG_ERROR(TAG, e, msg, ##__VA_ARGS__)
+#endif
+
+
 #ifndef TJ_LOG_STREAM
 #define TJ_LOG_STREAM stdout
 #endif
