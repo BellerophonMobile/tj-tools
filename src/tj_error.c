@@ -149,3 +149,11 @@ tj_error_getMessage(tj_error *x)
   return (x->m_msg == 0) ? k_noMemoryMessage : utstring_body(x->m_msg);
   // end tj_error_getMessage
 }
+
+//----------------------------------------------------------------------
+tj_error_code
+tj_error_getCode(tj_error *x)
+{
+  return x->m_majorCode;
+  // end tj_error_getCode
+}

@@ -86,6 +86,8 @@ tj_error_appendMessage(tj_error *x, char *fmt, ...);
 const char *
 tj_error_getMessage(tj_error *x);
 
+tj_error_code
+tj_error_getCode(tj_error *x);
 
 //----------------------------------------------------------------------
 
