@@ -146,7 +146,7 @@ tj_buffer_getBytesAtIndex(tj_buffer *b, size_t i);
  * \return 0 on failure, 1 otherwise.
  */
 int
-tj_buffer_append(tj_buffer *b, tj_buffer_byte *data, size_t n);
+tj_buffer_append(tj_buffer *b, const tj_buffer_byte *data, size_t n);
 
 /**
  * Appends the used extent of s into b.  Follows the same memory rules
@@ -158,7 +158,7 @@ tj_buffer_append(tj_buffer *b, tj_buffer_byte *data, size_t n);
  * \return 0 on failure, 1 otherwise.
  */
 int
-tj_buffer_appendBuffer(tj_buffer *b, tj_buffer *s);
+tj_buffer_appendBuffer(tj_buffer *b, const tj_buffer *s);
 
 /**
  * Add a string to the end of the buffer, including the null
