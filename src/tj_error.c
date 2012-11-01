@@ -118,6 +118,8 @@ tj_error_finalize(tj_error *x)
 
   if (x->m_msg != 0)
     utstring_free(x->m_msg);
+
+  free(x);
   // end tj_error_finalize
 }
 
