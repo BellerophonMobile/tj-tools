@@ -97,7 +97,7 @@ tj_error_create(tj_error_code code, char *fmt, ...)
   }
 
   x->m_majorCode =
-    (code >= 0 && code <= NUM_TJ_ERROR_CODES) ? code : TJ_ERROR_FAILURE;
+    (code <= NUM_TJ_ERROR_CODES) ? code : TJ_ERROR_FAILURE;
 
   utstring_new(x->m_msg);
   utstring_printf(x->m_msg, "[%s]: ", k_tj_error_code_label[x->m_majorCode]);

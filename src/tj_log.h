@@ -54,7 +54,7 @@ typedef enum {
 #define TJ_LOG_LOG(level, component, e, msg, ...)                      \
   tj_log_log(level, component,                                         \
              __FILE__, __FUNCTION__, __LINE__,                         \
-             e, msg, ##__VA_ARGS__);
+             e, msg, ##__VA_ARGS__)
 #endif
 
 #ifndef TJ_LOG_VERBOSE
