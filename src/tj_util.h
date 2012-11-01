@@ -27,20 +27,28 @@
 
 #include <stdlib.h>
 
-
 // E.g.: tj_kb_naivesqlite *naive = TJ_ALLOC(tj_kb_naivesqlite);
 #define TJ_ALLOC(type)                                                 \
   ((calloc(1, sizeof(type))) ? :                                       \
-   (CRITICAL("Could not allocate " #type ".") , exit(-1), (type *) 0))
-
+   (CRITICAL("Could not allocate " #type "."), abort(), NULL))
 
 // E.g.: tj_kb_naivesqlite *naive;
-//       TJ_ALLOC(tj_kb_naivesqlite, naive, goto error);
+//       TJ_CALLOC(tj_kb_naivesqlite, naive, goto error);
 #define TJ_CALLOC(type, var, err)                                      \
   if ((var = calloc(1, sizeof(type))) == 0) {                          \
     CRITICAL("Could not allocate " #type ".");                         \
     err;                                                               \
   }
 
+#define TJ_STRDUP(str)                                                 \
+  ((strdup(str)) ? :                                                   \
+   (CRITICAL("Could not duplicate " #str "."), abort(), NULL))
+
+#define TJ_STRNDUP(str, n)                                             \
+  ((strndup(str, n)) ? :                                               \
+   (CRITICAL("Could not duplicate " #str "."), abort(), NULL))
+
+#define TJ_CHECKMEM(exp)                                               \
+  ((exp) ? : (CRITICAL(#exp " returned NULL"), abort(), NULL))
 
 #endif // __tj_util_h__
