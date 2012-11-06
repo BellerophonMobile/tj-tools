@@ -293,8 +293,8 @@ tj_buffer_pop(tj_buffer *b, size_t n)
 {
     if (n >= b->m_used) {
         b->m_used = 0;
+    } else {
+        memmove(b->m_buff, b->m_buff + n, b->m_used - n);
+        b->m_used -= n;
     }
-
-    memmove(b->m_buff, b->m_buff + n, b->m_used - n);
-    b->m_used -= n;
 }
