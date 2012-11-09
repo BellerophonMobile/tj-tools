@@ -38,12 +38,13 @@ typedef enum {
 
 
 #ifdef NDEBUG
-
 //-- No debugging!  Let them eat cake!
 #define TJ_LOG_VERBOSE(component, msg, ...)
 #define TJ_LOG_LOGIC(component, msg, ...)
 #define TJ_LOG_COMPONENT(component, msg, ...)
-#define TJ_LOG_CRITICAL(component, e, msg, ...)
+#define TJ_LOG_CRITICAL(component, msg, ...)
+
+#define TJ_LOG_ERROR(e, component, msg, ...)
 
 #define TJ_LOG_LOG(component, type, msg, ...)
 

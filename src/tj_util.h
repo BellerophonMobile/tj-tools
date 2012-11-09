@@ -27,28 +27,34 @@
 
 #include <stdlib.h>
 
+#ifdef NDEBUG
+#define TJ_UTIL_ABORT(msg) abort()
+#else
+#define TJ_UTIL_ABORT(msg) TJ_LOG_CRITICAL("tj_util", msg), abort()
+#endif
+
 // E.g.: tj_kb_naivesqlite *naive = TJ_ALLOC(tj_kb_naivesqlite);
-#define TJ_ALLOC(type)                                                 \
-  ((calloc(1, sizeof(type))) ? :                                       \
-   (CRITICAL("Could not allocate " #type "."), abort(), NULL))
+#define TJ_ALLOC(type) \
+  ((calloc(1, sizeof(type))) ? : \
+   (TJ_UTIL_ABORT("Could not allocate " #type "."), NULL))
 
 // E.g.: tj_kb_naivesqlite *naive;
 //       TJ_CALLOC(tj_kb_naivesqlite, naive, goto error);
-#define TJ_CALLOC(type, var, err)                                      \
-  if ((var = calloc(1, sizeof(type))) == 0) {                          \
-    CRITICAL("Could not allocate " #type ".");                         \
-    err;                                                               \
+#define TJ_CALLOC(type, var, err) \
+  if ((var = calloc(1, sizeof(type))) == 0) { \
+    TJ_LOG_CRITICAL("tj_util", "Could not allocate " #type "."); \
+    err; \
   }
 
-#define TJ_STRDUP(str)                                                 \
-  ((strdup(str)) ? :                                                   \
-   (CRITICAL("Could not duplicate " #str "."), abort(), NULL))
+#define TJ_STRDUP(str) \
+  ((strdup(str)) ? : \
+   (TJ_UTIL_ABORT("Could not duplicate " #str "."), NULL))
 
-#define TJ_STRNDUP(str, n)                                             \
-  ((strndup(str, n)) ? :                                               \
-   (CRITICAL("Could not duplicate " #str "."), abort(), NULL))
+#define TJ_STRNDUP(str, n) \
+  ((strndup(str, n)) ? : \
+   (TJ_UTIL_ABORT("Could not duplicate " #str "."), NULL))
 
-#define TJ_CHECKMEM(exp)                                               \
-  ((exp) ? : (CRITICAL(#exp " returned NULL"), abort(), NULL))
+#define TJ_CHECKMEM(exp) \
+  ((exp) ? : (TJ_UTIL_ABORT(#exp " returned NULL"), NULL))
 
 #endif // __tj_util_h__
