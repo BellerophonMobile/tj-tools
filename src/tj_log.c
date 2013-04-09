@@ -87,13 +87,14 @@ tj_log_logcatLog(void *data,
                  const char *file, const char *func, int line,
                  tj_error *error, const char *msg);
 
+/* Log to both console and logcat on Android. */
 tj_log_outchannel tj_log_logcatChannel =
   {
     .m_allocated = 0,
     .m_data = 0,
     .log = &tj_log_logcatLog,
     .finalize = 0,
-    .m_next = 0
+    .m_next = &tj_log_fprintfChannel,
   };
 
 tj_log_outchannel *tj_log_channelStack = &tj_log_logcatChannel;
