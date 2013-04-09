@@ -97,7 +97,7 @@ typedef enum {
 
 
 #ifndef TJ_LOG_STREAM
-#define TJ_LOG_STREAM stdout
+#define TJ_LOG_STREAM stderr
 #endif
 
 
