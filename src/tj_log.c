@@ -209,11 +209,15 @@ tj_log_fprintfLog(void *data,
                   tj_error *error, const char *msg)
 {
 
-  if (level == TJ_LOG_LEVEL_CRITICAL)
-    fprintf(TJ_LOG_STREAM, "[%s] ", tj_log_level_labels[level]);
+  if (level == TJ_LOG_LEVEL_OUTPUT) {
+    fprintf(TJ_LOG_STREAM, "%s\n", msg);
+  } else {
+    if (level == TJ_LOG_LEVEL_CRITICAL)
+      fprintf(TJ_LOG_STREAM, "[%s] ", tj_log_level_labels[level]);
 
-  fprintf(TJ_LOG_STREAM, "%s %s:%s:%d: %s\n",
-          component, file, func, line, msg);
+    fprintf(TJ_LOG_STREAM, "%s %s:%s:%d: %s\n",
+            component, file, func, line, msg);
+  }
 
   if (error != 0)
     fprintf(TJ_LOG_STREAM, "%s\n", tj_error_getMessage(error));
@@ -248,10 +252,22 @@ tj_log_logcatLog(void *data,
   case TJ_LOG_LEVEL_CRITICAL:
     pri = ANDROID_LOG_ERROR;
     break;
+
+  case TJ_LOG_LEVEL_OUTPUT:
+    pri = ANDROID_LOG_INFO;
+    break;
+
+  default:
+    pri = ANDROID_LOG_INFO;
+    break;
   }
 
-  __android_log_print(pri, component, "%s:%s:%d: %s",
-                      file, func, line, msg);
+  if (level == TJ_LOG_LEVEL_OUTPUT) {
+    __android_log_print(pri, component, "%s", msg);
+  } else {
+    __android_log_print(pri, component, "%s:%s:%d: %s",
+                        file, func, line, msg);
+  }
 
   if (error != 0)
     __android_log_print(pri, component, "%s", tj_error_getMessage(error));

@@ -33,24 +33,10 @@ typedef enum {
   TJ_LOG_LEVEL_VERBOSE,
   TJ_LOG_LEVEL_LOGIC,
   TJ_LOG_LEVEL_COMPONENT,
-  TJ_LOG_LEVEL_CRITICAL
+  TJ_LOG_LEVEL_CRITICAL,
+  TJ_LOG_LEVEL_OUTPUT,
 } tj_log_level;
 
-
-#ifdef NDEBUG
-//-- No debugging!  Let them eat cake!
-#define TJ_LOG_VERBOSE(component, msg, ...)
-#define TJ_LOG_LOGIC(component, msg, ...)
-#define TJ_LOG_COMPONENT(component, msg, ...)
-#define TJ_LOG_CRITICAL(component, msg, ...)
-
-#define TJ_LOG_ERROR(e, component, msg, ...)
-
-#define TJ_LOG_LOG(component, type, msg, ...)
-
-#else
-
-//-- Do some debugging...  BOOOORING!
 #ifndef TJ_LOG_LOG
 #define TJ_LOG_LOG(level, component, e, msg, ...)                      \
   tj_log_log(level, component,                                         \
@@ -58,6 +44,30 @@ typedef enum {
              e, msg, ##__VA_ARGS__)
 #endif
 
+#ifndef TJ_LOG_CRITICAL
+#define TJ_LOG_CRITICAL(component, msg, ...)                           \
+  TJ_LOG_LOG(TJ_LOG_LEVEL_CRITICAL, component, 0, msg, ##__VA_ARGS__)
+#endif
+
+#ifndef TJ_LOG_ERROR
+#define TJ_LOG_ERROR(component, e, msg, ...)                           \
+  TJ_LOG_LOG(TJ_LOG_LEVEL_CRITICAL, component, e, msg, ##__VA_ARGS__)
+#endif
+
+#ifndef TJ_LOG_OUTPUT
+#define TJ_LOG_OUTPUT(component, msg, ...)                             \
+  TJ_LOG_LOG(TJ_LOG_LEVEL_OUTPUT, component, 0, msg, ##__VA_ARGS__)
+#endif
+
+#ifdef NDEBUG
+//-- No debugging!  Let them eat cake!
+#define TJ_LOG_VERBOSE(component, msg, ...)
+#define TJ_LOG_LOGIC(component, msg, ...)
+#define TJ_LOG_COMPONENT(component, msg, ...)
+
+#else
+
+//-- Do some debugging...  BOOOORING!
 #ifndef TJ_LOG_VERBOSE
   #define TJ_LOG_VERBOSE(component, msg, ...)                          \
     TJ_LOG_LOG(TJ_LOG_LEVEL_VERBOSE, component, 0, msg, ##__VA_ARGS__)
@@ -73,16 +83,6 @@ typedef enum {
   TJ_LOG_LOG(TJ_LOG_LEVEL_COMPONENT, component, 0, msg, ##__VA_ARGS__)
 #endif
 
-#ifndef TJ_LOG_CRITICAL
-#define TJ_LOG_CRITICAL(component, msg, ...)                           \
-  TJ_LOG_LOG(TJ_LOG_LEVEL_CRITICAL, component, 0, msg, ##__VA_ARGS__)
-#endif
-
-#ifndef TJ_LOG_ERROR
-#define TJ_LOG_ERROR(component, e, msg, ...)                           \
-  TJ_LOG_LOG(TJ_LOG_LEVEL_CRITICAL, component, e, msg, ##__VA_ARGS__)
-#endif
-
 // end !NDEBUG
 #endif
 
@@ -93,6 +93,7 @@ typedef enum {
 #define COMPONENT(msg, ...) TJ_LOG_COMPONENT(TAG, msg, ##__VA_ARGS__)
 #define CRITICAL(msg, ...) TJ_LOG_CRITICAL(TAG, msg, ##__VA_ARGS__)
 #define ERROR(e, msg, ...) TJ_LOG_ERROR(TAG, e, msg, ##__VA_ARGS__)
+#define OUTPUT(e, msg, ...) TJ_LOG_OUTPUT(TAG, msg, ##__VA_ARGS__)
 #endif
 
 
