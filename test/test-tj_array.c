@@ -67,11 +67,31 @@ static void init_array(struct tj_array *array, int *a, int *b, int *c,
 }
 
 static void test_array_empty(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = tj_array_new(0);
 
     assert_int_equal(tj_array_count(array), 0);
+    assert_int_equal(tj_array_capacity(array), 0);
     expect_assert_failure(tj_array_get(array, 0));
     expect_assert_failure(tj_array_remove(array, 0));
+
+    tj_array_del(array);
+}
+
+static void test_array_preallocated(void **state) {
+    struct tj_array *array = tj_array_new(11);
+
+    assert_int_equal(tj_array_count(array), 0);
+    assert_int_equal(tj_array_capacity(array), 11);
+    expect_assert_failure(tj_array_get(array, 0));
+    expect_assert_failure(tj_array_remove(array, 0));
+
+    int a = VALUE_A;
+    tj_array_append(array, &a);
+    assert_int_equal(tj_array_count(array), 1);
+    assert_int_equal(tj_array_capacity(array), 11);
+    assert_int_equal(*(int*)tj_array_get(array, 0), VALUE_A);
+
+    tj_array_del(array);
 }
 
 static void test_array_append_get(void **state) {
@@ -273,7 +293,8 @@ static void test_array_find5(void **state) {
 
 int main(int argc, char **argv) {
     const UnitTest tests[] = {
-        unit_test_setup_teardown(test_array_empty, setup, teardown),
+        unit_test(test_array_empty),
+        unit_test(test_array_preallocated),
         unit_test_setup_teardown(test_array_append_get, setup, teardown),
         unit_test_setup_teardown(test_array_remove1, setup, teardown),
         unit_test_setup_teardown(test_array_remove2, setup, teardown),
