@@ -67,6 +67,9 @@ bin/test-tj_error: test/test-tj_error.c                                \
                    src/tj_error.h
 	$(CC) $(CFLAGS) -o $@ $^ $(INCS)
 
+bin/test-tj_array: test/test-tj_array.c src/tj_array.c
+	$(CC) $(CFLAGS) -o $@ $(INCS) -DHAVE_MALLOC_H -Ideps/cmocka/include \
+		deps/cmocka/src/cmocka.c $<
 
 #-----------------------------------------------------------------------
 .PHONY: clean doxygen attribute
