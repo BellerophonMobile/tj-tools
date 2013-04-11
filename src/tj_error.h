@@ -29,8 +29,8 @@
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#ifndef TJ_LOG_STREAM
-#define TJ_LOG_STREAM stdout
+#ifndef TJ_DEBUG_STREAM
+#define TJ_DEBUG_STREAM stdout
 #endif
 
 #ifndef TJ_ERROR_STREAM
@@ -41,7 +41,7 @@
 #ifdef NDEBUG
 #define TJ_LOG(M, ...)
 #else
-#define TJ_LOG(M, ...) fprintf(TJ_LOG_STREAM, "%s: " M "\n", __FUNCTION__, ##__VA_ARGS__)
+#define TJ_LOG(M, ...) fprintf(TJ_DEBUG_STREAM, "%s: " M "\n", __FUNCTION__, ##__VA_ARGS__)
 #endif // ifndef NDEBUG else
 #endif // ifndef TJ_LOG
 
