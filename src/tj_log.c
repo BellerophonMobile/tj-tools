@@ -41,7 +41,6 @@ const char *tj_log_level_labels[] =
     "CRITICAL"
   };
 
-
 struct tj_log_outchannel {
   int m_allocated;
 
@@ -64,12 +63,6 @@ tj_log_finalize(void);
 
 // This is done like this so that you could add the fprintf channel in
 // addition to the logcat channel on Android.
-
-void
-tj_log_fprintfLog(void *data,
-                  tj_log_level level, const char *component,
-                  const char *file, const char *func, int line,
-                  tj_error *error, const char *msg);
 
 tj_log_outchannel tj_log_fprintfChannel =
   {
@@ -199,6 +192,9 @@ tj_log_log(tj_log_level level, const char *component,
   // end tj_log_log
 }
 
+void tj_log_setData(tj_log_outchannel *out, void *data) {
+  out->m_data = data;
+}
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
@@ -208,21 +204,33 @@ tj_log_fprintfLog(void *data,
                   const char *file, const char *func, int line,
                   tj_error *error, const char *msg)
 {
+  FILE *out = (FILE*)data;
+  if (out == NULL) {
+      out = TJ_LOG_STREAM;
+  }
 
   if (level == TJ_LOG_LEVEL_OUTPUT) {
-    fprintf(TJ_LOG_STREAM, "%s\n", msg);
+    fprintf(out, "%s\n", msg);
   } else {
     if (level == TJ_LOG_LEVEL_CRITICAL)
-      fprintf(TJ_LOG_STREAM, "[%s] ", tj_log_level_labels[level]);
+      fprintf(out, "[%s] ", tj_log_level_labels[level]);
 
-    fprintf(TJ_LOG_STREAM, "%s %s:%s:%d: %s\n",
+    fprintf(out, "%s %s:%s:%d: %s\n",
             component, file, func, line, msg);
   }
 
   if (error != 0)
-    fprintf(TJ_LOG_STREAM, "%s\n", tj_error_getMessage(error));
+    fprintf(out, "%s\n", tj_error_getMessage(error));
 
   // end tj_log_fprintfLog
+}
+
+void
+tj_log_fprintfLogFinalize(void *data) {
+  FILE *out = (FILE*)data;
+  if (out != NULL) {
+    fclose(out);
+  }
 }
 
 //----------------------------------------------------------------------

@@ -141,4 +141,18 @@ void tj_log_log(tj_log_level level, const char *component,
                 const char *file, const char *func, int line,
                 tj_error *error, const char *m, ...);
 
+void tj_log_setData(tj_log_outchannel *out, void *data);
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+
+void
+tj_log_fprintfLog(void *data,
+                  tj_log_level level, const char *component,
+                  const char *file, const char *func, int line,
+                  tj_error *error, const char *msg);
+
+void
+tj_log_fprintfLogFinalize(void *data);
+
 #endif // __tj_log_h__
