@@ -51,27 +51,21 @@ dirs:
 
 #-----------------------------------------------------------------------
 
-bin/test-tj_buffer: test/test-tj_buffer.c                              \
-                    src/tj_buffer.c src/tj_buffer.h
+bin/test-tj_buffer: test/test-tj_buffer.c src/tj_buffer.c
 	$(CC) $(CFLAGS) -o $@ $^ $(INCS)
 
 bin/test-tj_template: test/test-tj_template.c                          \
-                      src/tj_template.c src/tj_buffer.c                \
-                      src/tj_template.h src/tj_buffer.h
+                      src/tj_template.c src/tj_buffer.c
 	$(CC) $(CFLAGS) -o $@ $^ $(INCS)
 
-bin/test-tj_heap: test/test-tj_heap.c                                  \
-                  src/tj_heap.h
+bin/test-tj_heap: test/test-tj_heap.c
 	$(CC) $(CFLAGS) -o $@ $^ $(INCS)
 
 bin/test-tj_log: test/test-tj_log.c                                    \
-                 src/tj_error.c src/tj_log.c src/tj_log_sqlite.c       \
-                 src/tj_error.h src/tj_log.h src/tj_log_sqlite.h
+                 src/tj_error.c src/tj_log.c src/tj_log_sqlite.c
 	$(CC) $(CFLAGS) -o $@ $^ $(INCS) -lsqlite3
 
-bin/test-tj_error: test/test-tj_error.c                                \
-                   src/tj_error.c                                      \
-                   src/tj_error.h
+bin/test-tj_error: test/test-tj_error.c src/tj_error.c
 	$(CC) $(CFLAGS) -o $@ $^ $(INCS)
 
 bin/test-tj_array: test/test-tj_array.c src/tj_array.c
@@ -89,7 +83,7 @@ distclean:
 docs:
 	doxygen
 
-test: $(TEST_TGTS)
+test: all
 	@\
 		tmpdir=$$(mktemp -d); \
 		for test in $(TESTS); \
