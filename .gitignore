@@ -1,6 +1,5 @@
 *~
 .*.swp
-/doxygen/
-/obj/
+/docs/
 /bin/
 tj_log.db

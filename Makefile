@@ -87,7 +87,7 @@ distclean:
 	if [ -d $(DOC_DIR) ]; then rm -rf $(DOC_DIR); fi
 
 docs:
-	doxygen doxygen.config
+	doxygen
 
 test: $(TEST_TGTS)
 	@\
