@@ -22,25 +22,32 @@
 # SOFTWARE.
 #-----------------------------------------------------------------------
 
-INCS=-Isrc/
-CFLAGS+=-g -Wall
+CFLAGS += -Wall -Werror
+INCS = -Isrc -Ideps/uthash/src
+
+CFLAGS += -O0 -g
+#CFLAGS += -O3
 
 TESTS=test-tj_buffer   \
       test-tj_template \
       test-tj_heap     \
       test-tj_log      \
-      test-tj_error
+      test-tj_error    \
+	  test-tj_array
 
-TEST_SRCS=$(addsuffix .c,$(addprefix test/,$(TESTS)))
-TEST_TGTS=$(addprefix bin/,$(TESTS))
+BIN_DIR = bin
+DOC_DIR = doc
+TST_DIR = test
 
-all: dirs   $(TEST_TGTS)
-#$(addprefix bin/,$(TESTS))
+TEST_SRCS = $(addsuffix .c,$(addprefix $(TST_DIR)/,$(TESTS)))
+TEST_TGTS = $(addprefix $(BIN_DIR)/,$(TESTS))
+
+.PHONY: all clean distclean docs test
+
+all: dirs $(TEST_TGTS)
 
 dirs:
-	@if [ ! -e obj ]; then mkdir -p obj; fi
-	@if [ ! -e bin ]; then mkdir -p bin; fi
-
+	@if [ ! -d $(BIN_DIR) ]; then mkdir -p $(BIN_DIR); fi
 
 #-----------------------------------------------------------------------
 
@@ -72,23 +79,30 @@ bin/test-tj_array: test/test-tj_array.c src/tj_array.c
 		deps/cmocka/src/cmocka.c $<
 
 #-----------------------------------------------------------------------
-.PHONY: clean doxygen attribute
 
 clean:
-	if [ -e bin ]; then rm -rf bin; fi
-	if [ -e obj ]; then rm -rf obj; fi
-	if [ -e doxygen ]; then rm -rf doxygen; fi
-	find . -name '*~' -delete
 
-doxygen:
+distclean:
+	if [ -d $(BIN_DIR) ]; then rm -rf $(BIN_DIR); fi
+	if [ -d $(DOC_DIR) ]; then rm -rf $(DOC_DIR); fi
+
+docs:
 	doxygen doxygen.config
 
-attribute:
-	@for i in $(shell find src/ -name '*.c') \
-                  $(shell find src/ -name '*.h'); do \
-           head -n 2 $$i | grep Copyright > /dev/null; \
-           if [ $$? = 1 ]; then \
-             cat mit-license.txt $$i > lic-tmp; \
-             mv lic-tmp $$i; \
-             echo Added license to $$i; \
-           fi; done
+test: $(TEST_TGTS)
+	@\
+		tmpdir=$$(mktemp -d); \
+		for test in $(TESTS); \
+		do \
+			echo Executing $$test; \
+			$(BIN_DIR)/$$test &> "$$tmpdir/$$test.log"; \
+			rv=$$?; \
+			if [ $$rv -ne 0 ]; \
+			then \
+				echo "$$test FAILED (return value $$rv);" \
+				echo OUTPUT:; \
+				cat "$$tmpdir/$$test.log"; \
+				exit $$rv; \
+			fi; \
+		done; \
+		rm -rf "$$tmpdir"
