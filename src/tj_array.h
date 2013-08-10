@@ -74,6 +74,9 @@ void tj_array_remove(struct tj_array *array, size_t index);
  */
 void tj_array_removeItem(struct tj_array *array, void *item);
 
+/** Removes all items from the array. */
+void tj_array_clear(struct tj_array *array);
+
 /**
  * Searches an array for an element, by comparing pointers.
  *

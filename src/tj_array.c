@@ -106,6 +106,10 @@ void tj_array_removeItem(struct tj_array *array, void *item) {
     tj_array_remove(array, tj_array_find(array, item));
 }
 
+void tj_array_clear(struct tj_array *array) {
+    array->count = 0;
+}
+
 ssize_t tj_array_find(const struct tj_array *array, void *item) {
     size_t i;
     for (i = 0; i < array->count; i++) {
