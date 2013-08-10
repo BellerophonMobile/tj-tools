@@ -235,6 +235,15 @@ tj_buffer_appendFile(tj_buffer *b, const char *filename);
  * \param n The number of bytes to remove.
  */
 void
-tj_buffer_pop(tj_buffer *b, size_t n);
+tj_buffer_popFront(tj_buffer *b, size_t n);
+
+/**
+ * Removes the first n bytes from the back of the buffer.
+ *
+ * \param b The buffer to operate on.
+ * \param n The number of bytes to remove.
+ */
+void
+tj_buffer_popBack(tj_buffer *b, size_t n);
 
 #endif // __tj_buffer_h__

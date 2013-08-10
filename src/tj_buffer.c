@@ -289,12 +289,22 @@ tj_buffer_appendFile(tj_buffer *b, const char *filename)
 }
 
 void
-tj_buffer_pop(tj_buffer *b, size_t n)
+tj_buffer_popFront(tj_buffer *b, size_t n)
 {
     if (n >= b->m_used) {
         b->m_used = 0;
     } else {
         memmove(b->m_buff, b->m_buff + n, b->m_used - n);
+        b->m_used -= n;
+    }
+}
+
+void
+tj_buffer_popBack(tj_buffer *b, size_t n)
+{
+    if (n >= b->m_used) {
+        b->m_used = 0;
+    } else {
         b->m_used -= n;
     }
 }
