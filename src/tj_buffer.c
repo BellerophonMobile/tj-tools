@@ -308,3 +308,33 @@ tj_buffer_popBack(tj_buffer *b, size_t n)
         b->m_used -= n;
     }
 }
+
+void
+tj_buffer_strip(tj_buffer *b, int (*func)(int c))
+{
+    if (b->m_used == 0) {
+        return;
+    }
+
+    size_t leading;
+    for (leading = 0; leading < b->m_used; leading++) {
+        if (func(b->m_buff[leading]) == 0) {
+            break;
+        }
+    }
+
+    tj_buffer_popFront(b, leading);
+
+    if (leading == b->m_used) {
+        return;
+    }
+
+    size_t trailing;
+    for (trailing = b->m_used - 1; trailing > 0; trailing--) {
+        if (func(b->m_buff[trailing]) == 0) {
+            break;
+        }
+    }
+
+    tj_buffer_popBack(b, b->m_used - trailing - 1);
+}

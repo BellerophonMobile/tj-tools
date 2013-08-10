@@ -246,4 +246,16 @@ tj_buffer_popFront(tj_buffer *b, size_t n);
 void
 tj_buffer_popBack(tj_buffer *b, size_t n);
 
+/**
+ * Removes leading and trailing characters matching a comparison function.
+ *
+ * Comparison function has the same signature as functions such as isblank()
+ * or isspace().
+ *
+ * \param b    The buffer to operate on.
+ * \param func A comparison function.
+ */
+void
+tj_buffer_strip(tj_buffer *b, int (*func)(int c));
+
 #endif // __tj_buffer_h__
