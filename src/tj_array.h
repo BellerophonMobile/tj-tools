@@ -39,10 +39,10 @@ struct tj_array;
  *
  * \param capacity Initial capacity, may be 0.
  */
-struct tj_array *tj_array_new(size_t capacity);
+struct tj_array *tj_array_create(size_t capacity);
 
 /** Frees a dynamic array. */
-void tj_array_del(struct tj_array *array);
+void tj_array_finalize(struct tj_array *array);
 
 /** Returns the number of elements in the array. */
 size_t tj_array_count(const struct tj_array *array);

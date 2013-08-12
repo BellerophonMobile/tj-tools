@@ -43,7 +43,7 @@ struct tj_array {
 
 static const size_t DEFAULT_LIST_SIZE = 5;
 
-struct tj_array *tj_array_new(size_t capacity) {
+struct tj_array *tj_array_create(size_t capacity) {
     struct tj_array *array = malloc(sizeof(*array));
     if (array == NULL) {
         return NULL;
@@ -60,7 +60,7 @@ struct tj_array *tj_array_new(size_t capacity) {
     return array;
 }
 
-void tj_array_del(struct tj_array *array) {
+void tj_array_finalize(struct tj_array *array) {
     if (array->array != NULL) {
         free(array->array);
     }
