@@ -255,7 +255,7 @@ tj_template_variables_apply(tj_template_variables *variables,
   int tmplIndex = 0;
   int start = 0, end = 0;
   tmpl_scan_mode mode = SCAN;
-  int varScanLen;
+  int varScanLen = 0;
 
   tj_buffer_byte *template = tj_buffer_getBytes(src);
   tj_template_variable *v;
