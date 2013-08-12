@@ -55,6 +55,10 @@ struct tj_array *tj_array_create(size_t capacity) {
 
     if (array->capacity > 0) {
         array->array = malloc(capacity * sizeof(void*));
+        if (array->array == NULL) {
+            free(array);
+            return NULL;
+        }
     }
 
     return array;
@@ -80,17 +84,25 @@ void *tj_array_get(const struct tj_array *array, size_t index) {
     return array->array[index];
 }
 
-void tj_array_append(struct tj_array *array, void *item) {
+int tj_array_append(struct tj_array *array, void *item) {
     if (array->count == array->capacity) {
         if (array->array == NULL) {
             array->capacity = DEFAULT_LIST_SIZE;
         } else {
             array->capacity = (array->capacity) * 2;
         }
-        array->array = realloc(array->array, array->capacity * sizeof(void*));
+
+        void **new_array = realloc(array->array,
+                array->capacity * sizeof(void*));
+        if (new_array == NULL) {
+            return 0;
+        }
+        array->array = new_array;
     }
     array->array[array->count] = item;
     array->count += 1;
+
+    return 1;
 }
 
 void tj_array_remove(struct tj_array *array, size_t index) {

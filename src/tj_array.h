@@ -57,8 +57,10 @@ void *tj_array_get(const struct tj_array *array, size_t index);
  * Append an item to a dynamic array.
  *
  * If the array is full, this will resize the array.
+ *
+ * \return 0 on failure, 1 otherwise.
  */
-void tj_array_append(struct tj_array *array, void *item);
+int tj_array_append(struct tj_array *array, void *item);
 
 /**
  * Remove an item at a particular index from a dynamic array.
@@ -80,6 +82,6 @@ void tj_array_clear(struct tj_array *array);
 /**
  * Searches an array for an element, by comparing pointers.
  *
- * \returns -1 if item not found.
+ * \return -1 if item not found.
  */
 ssize_t tj_array_find(const struct tj_array *array, void *item);
