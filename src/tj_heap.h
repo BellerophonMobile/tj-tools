@@ -41,11 +41,13 @@
 #ifdef NDEBUG
 #define TJ_LOG(M, ...)
 #else
+#include <stdio.h>
 #define TJ_LOG(M, ...) fprintf(TJ_DEBUG_STREAM, "%s: " M "\n", __FUNCTION__, ##__VA_ARGS__)
 #endif // ifndef NDEBUG else
 #endif // ifndef TJ_LOG
 
-#ifndef TJ_ERRROR
+#ifndef TJ_ERROR
+#include <stdio.h>
 #define TJ_ERROR(M, ...) fprintf(TJ_ERROR_STREAM, "[ERROR] %s:%s:%d: " M "\n", __FUNCTION__, __FILE__, __LINE__, ##__VA_ARGS__)
 #endif
 
