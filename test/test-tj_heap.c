@@ -22,132 +22,191 @@
  * SOFTWARE.
  */
 
-
-#include <stdio.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <tj_heap.h>
+#include "cmocka.h"
 
-int fail = 0;
+#include "tj_heap.h"
 
-#define FAIL(M, ...) {fail = 1; printf("FAIL: " M "\n", ##__VA_ARGS__);}
-
-int intless(int a, int b) { return a  < b; }
-int intfind(void *d, int k, char *v) { return (strcmp(v, d) == 0); }
+static int intless(int a, int b) { return a  < b; }
+static int intfind(void *d, int k, char *v) { return (strcmp(v, d) == 0); }
 TJ_HEAP_DECL(intheap, int, char *, intless);
 
-int floatmore(float a, float b) { return a  > b; }
+static int floatmore(float a, float b) { return a  > b; }
 TJ_HEAP_DECL(floatheap, float, char *, floatmore);
 
-int
-main(int argc, char *argv[])
-{
+static void int_setup(void **state) {
+    intheap *heap = intheap_create(4);
+    assert_non_null(heap);
 
-  // Skipping the error checking...
+    *state = (void*)heap;
+}
 
-  //----------------------------------------------------
-  intheap *heap = intheap_create(4);
+static void int_teardown(void **state) {
+    intheap *heap = *state;
+    if (heap != NULL) {
+        intheap_finalize(heap);
+    }
+}
 
-  int k;
-  char *v;
+static void float_setup(void **state) {
+    floatheap *heap = floatheap_create(4);
+    assert_non_null(heap);
 
-  intheap_add(heap, 923, "h");
-  intheap_add(heap, 467, "d");
-  intheap_add(heap, 23, "a1");
-  intheap_add(heap, 500, "f1");
-  intheap_add(heap, 23, "a2");
-  intheap_add(heap, 234, "d");
-  intheap_add(heap, 468, "e");
-  intheap_add(heap, 900, "g");
-  intheap_add(heap, 90, "c");
-  intheap_add(heap, 500, "f2");
-  intheap_add(heap, 80, "b");
+    *state = (void*)heap;
+}
 
-  printf("Integer min heap.\n");
-  if (intheap_peek(heap, &k, &v)) {
-    printf("Peek %4d %6s\n", k, v);
-  }
+static void float_teardown(void **state) {
+    floatheap *heap = *state;
+    if (heap != NULL) {
+        floatheap_finalize(heap);
+    }
+}
 
-  while (intheap_pop(heap, &k, &v)) {
-    printf("  %4d %6s\n", k, v);
-  }
-  printf("\n");
+static void test_int_min(void **state) {
+    intheap *heap = *state;
 
-  intheap_finalize(heap);
+    assert_true(intheap_add(heap, 923, "h"));
+    assert_true(intheap_add(heap, 467, "d"));
+    assert_true(intheap_add(heap, 23, "a1"));
+    assert_true(intheap_add(heap, 500, "f1"));
+    assert_true(intheap_add(heap, 23, "a2"));
+    assert_true(intheap_add(heap, 234, "d"));
+    assert_true(intheap_add(heap, 468, "e"));
+    assert_true(intheap_add(heap, 900, "g"));
+    assert_true(intheap_add(heap, 90, "c"));
+    assert_true(intheap_add(heap, 500, "f2"));
+    assert_true(intheap_add(heap, 80, "b"));
 
-  //----------------------------------------------------
-  floatheap *fheap = floatheap_create(8);
-  floatheap_add(fheap, 2.4, "2.4");
-  floatheap_add(fheap, 0.3, "0.3");
-  floatheap_add(fheap, 0.7, "0.7");
-  floatheap_add(fheap, 7.8, "7.8");
-  floatheap_add(fheap, 4.0, "4.0");
+    int k;
+    char *v;
 
-  float f;
+    assert_true(intheap_pop(heap, &k, &v));
+    assert_int_equal(k, 23);
+    assert_string_equal(v, "a1");
 
-  printf("Float max heap.\n");
-  if (floatheap_peek(fheap, &f, &v)) {
-    printf("Peek %4f %6s\n", f, v);
-  }
+    assert_true(intheap_pop(heap, &k, &v));
+    assert_int_equal(k, 23);
+    assert_string_equal(v, "a2");
 
-  while (floatheap_pop(fheap, &f, &v)) {
-    printf("  %4f %6s\n", f, v);
-  }
-  printf("\n");
+    assert_true(intheap_pop(heap, &k, &v));
+    assert_int_equal(k, 80);
+    assert_string_equal(v, "b");
 
-  floatheap_finalize(fheap);
+    assert_true(intheap_pop(heap, &k, &v));
+    assert_int_equal(k, 90);
+    assert_string_equal(v, "c");
 
-  //----------------------------------------------------
-  heap = intheap_create(4);
+    assert_true(intheap_pop(heap, &k, &v));
+    assert_int_equal(k, 234);
+    assert_string_equal(v, "d");
 
-  intheap_add(heap, 923, "d");
-  intheap_add(heap, 467, "b");
-  intheap_add(heap, 23, "a");
-  intheap_add(heap, 500, "c");
+    assert_true(intheap_pop(heap, &k, &v));
+    assert_int_equal(k, 467);
+    assert_string_equal(v, "d");
 
-  k = intheap_find(heap, &intfind, "a");
-  if (k == -1) {
-    printf("Could not find a.\n");
-  } else {
-    printf("Found a at %d.\n", k);
-    intheap_remove(heap, k, &k, &v);
-    printf("Removed %d:%s.\n", k, v);
-  }
+    assert_true(intheap_pop(heap, &k, &v));
+    assert_int_equal(k, 468);
+    assert_string_equal(v, "e");
 
-  k = intheap_find(heap, &intfind, "c");
-  if (k == -1) {
-    printf("Could not find a.\n");
-  } else {
-    printf("Found c at %d.\n", k);
-    intheap_remove(heap, k, &k, &v);
-    printf("Removed %d:%s.\n", k, v);
-  }
+    assert_true(intheap_pop(heap, &k, &v));
+    assert_int_equal(k, 500);
+    assert_string_equal(v, "f1");
 
-  k = intheap_find(heap, &intfind, "x");
-  if (k == -1) {
-    printf("Could not find x.\n");
-  } else {
-    printf("Found x at %d.\n", k);
-    intheap_remove(heap, k, &k, &v);
-    printf("Removed %d:%s.\n", k, v);
-  }
+    assert_true(intheap_pop(heap, &k, &v));
+    assert_int_equal(k, 500);
+    assert_string_equal(v, "f2");
 
-  while (intheap_pop(heap, &k, &v)) {
-    printf("  %4d %6s\n", k, v);
-  }
-  printf("\n");
+    assert_true(intheap_pop(heap, &k, &v));
+    assert_int_equal(k, 900);
+    assert_string_equal(v, "g");
 
-  intheap_finalize(heap);
+    assert_true(intheap_pop(heap, &k, &v));
+    assert_int_equal(k, 923);
+    assert_string_equal(v, "h");
 
-  //----------------------------------------------------
-  if (fail) {
-    printf("** There were errors.\n");
-    return -1;
-  }
+    assert_false(intheap_pop(heap, &k, &v));
+}
 
-  printf("Done.\n");
+static void test_int_find(void **state) {
+    intheap *heap = *state;
 
-  return 0;
-  // end main
+    intheap_add(heap, 923, "d");
+    intheap_add(heap, 467, "b");
+    intheap_add(heap, 23, "a");
+    intheap_add(heap, 500, "c");
+
+    int k;
+    char *v;
+
+    k = intheap_find(heap, &intfind, "a");
+    assert_int_not_equal(k, -1);
+    assert_true(intheap_remove(heap, k, &k, &v));
+
+    k = intheap_find(heap, &intfind, "c");
+    assert_int_not_equal(k, -1);
+    assert_true(intheap_remove(heap, k, &k, &v));
+
+    k = intheap_find(heap, &intfind, "x");
+    assert_int_equal(k, -1);
+    assert_false(intheap_remove(heap, k, &k, &v));
+
+    assert_true(intheap_pop(heap, &k, &v));
+    assert_int_equal(k, 467);
+    assert_string_equal(v, "b");
+
+    assert_true(intheap_pop(heap, &k, &v));
+    assert_int_equal(k, 923);
+    assert_string_equal(v, "d");
+
+    assert_false(intheap_pop(heap, &k, &v));
+}
+
+static void test_float_max(void **state) {
+    floatheap *heap = *state;
+
+    floatheap_add(heap, 2.4, "2.4");
+    floatheap_add(heap, 0.3, "0.3");
+    floatheap_add(heap, 0.7, "0.7");
+    floatheap_add(heap, 7.8, "7.8");
+    floatheap_add(heap, 4.0, "4.0");
+
+    float k;
+    char *v;
+
+    assert_true(floatheap_pop(heap, &k, &v));
+    assert_in_range(k, 7.80, 7.81);
+    assert_string_equal(v, "7.8");
+
+    assert_true(floatheap_pop(heap, &k, &v));
+    assert_in_range(k, 4.00, 4.01);
+    assert_string_equal(v, "4.0");
+
+    assert_true(floatheap_pop(heap, &k, &v));
+    assert_in_range(k, 2.40, 2.41);
+    assert_string_equal(v, "2.4");
+
+    assert_true(floatheap_pop(heap, &k, &v));
+    assert_in_range(k, 0.70, 0.71);
+    assert_string_equal(v, "0.7");
+
+    assert_true(floatheap_pop(heap, &k, &v));
+    assert_in_range(k, 0.30, 0.31);
+    assert_string_equal(v, "0.3");
+
+    assert_false(floatheap_pop(heap, &k, &v));
+}
+
+int main(int argc, char *argv[0]) {
+    const UnitTest tests[] = {
+        unit_test_setup_teardown(test_int_min, int_setup, int_teardown),
+        unit_test_setup_teardown(test_int_find, int_setup, int_teardown),
+        unit_test_setup_teardown(test_float_max, float_setup, float_teardown),
+    };
+
+    return run_tests(tests);
 }

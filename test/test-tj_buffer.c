@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Joe Kopena <tjkopena@gmail.com>
+ * Copyright (c) 2013 Joe Kopena <tjkopena@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,182 +22,180 @@
  * SOFTWARE.
  */
 
-
-#include <stdio.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <tj_buffer.h>
+#include "cmocka.h"
 
-int fail = 0;
+#include "tj_buffer.h"
 
-#define FAIL(M, ...) {fail = 1; printf("FAIL: " M "\n", ##__VA_ARGS__);}
+static char *argv0 = "";
 
-int
-main(int argc, char *argv[])
-{
+static void setup(void **state) {
+    tj_buffer *b = tj_buffer_create(0);
+    assert_non_null(b);
+    *state = (void*)b;
+}
 
-  // Skipping the error checking...
+static void teardown(void **state) {
+    tj_buffer *b = *state;
+    if (b != NULL) {
+        tj_buffer_finalize(b);
+    }
+}
 
-  tj_buffer *buff1 = tj_buffer_create(0);
+static void test_append1(void **state) {
+    tj_buffer *b = *state;
 
-  tj_buffer_append(buff1, (tj_buffer_byte *) "HELLO", 5);
+    assert_true(tj_buffer_append(b, (tj_buffer_byte*)"HELLO", 5));
 
-  if (tj_buffer_getAllocated(buff1) != 5)
-    FAIL("Incorrect allocation!");
+    assert_int_equal(tj_buffer_getAllocated(b), 5);
+    assert_int_equal(tj_buffer_getUsed(b), 5);
+}
 
-  if (tj_buffer_getUsed(buff1) != 5)
-    FAIL("Incorrect used amount.");
+static void test_append2(void **state) {
+    tj_buffer *b = *state;
 
-  tj_buffer_append(buff1, (tj_buffer_byte *) "HELLO", 5);
+    assert_true(tj_buffer_append(b, (tj_buffer_byte*)"HELLO", 5));
+    assert_true(tj_buffer_append(b, (tj_buffer_byte*)"HELLO", 5));
 
-  if (tj_buffer_getAllocated(buff1) != 10)
-    FAIL("Incorrect increased allocation!");
+    assert_int_equal(tj_buffer_getAllocated(b), 10);
+    assert_int_equal(tj_buffer_getUsed(b), 10);
+}
 
-  if (tj_buffer_getUsed(buff1) != 10)
-    FAIL("Incorrect increased used amount.");
+static void test_appendString(void **state) {
+    tj_buffer *b = *state;
 
-  tj_buffer_appendString(buff1, "HELLO");
+    assert_true(tj_buffer_append(b, (tj_buffer_byte*)"HELLO", 5));
+    assert_true(tj_buffer_append(b, (tj_buffer_byte*)"HELLO", 5));
+    assert_true(tj_buffer_appendString(b, "HELLO"));
 
-  if (strcmp((char *) tj_buffer_getBytes(buff1), "HELLOHELLOHELLO"))
-    FAIL("Accumulated string incorrect.");
+    assert_int_equal(tj_buffer_getAllocated(b), 16);
+    assert_int_equal(tj_buffer_getUsed(b), 16);
+    assert_string_equal((char*)tj_buffer_getBytes(b), "HELLOHELLOHELLO");
+}
 
-  printf("Res: '%s'\n", (char *) tj_buffer_getBytes(buff1));
+static void test_reset1(void **state) {
+    tj_buffer *b = *state;
 
-  if (tj_buffer_getAllocated(buff1) != 16)
-    FAIL("Incorrect accumulated allocation!");
+    assert_true(tj_buffer_append(b, (tj_buffer_byte*)"HELLO", 5));
+    assert_true(tj_buffer_append(b, (tj_buffer_byte*)"HELLO", 5));
+    assert_true(tj_buffer_appendString(b, "HELLO"));
 
-  if (tj_buffer_getUsed(buff1) != 16)
-    FAIL("Incorrect accumulated used amount.");
+    tj_buffer_reset(b);
 
-  //--------------------------------------------
-  tj_buffer_reset(buff1);
+    assert_int_equal(tj_buffer_getAllocated(b), 16);
+    assert_int_equal(tj_buffer_getUsed(b), 0);
+}
 
-  if (tj_buffer_getAllocated(buff1) != 16)
-    FAIL("Incorrect allocation.");
+static void test_reset2(void **state) {
+    tj_buffer *b = *state;
 
-  if (tj_buffer_getUsed(buff1) != 0)
-    FAIL("Incorrect used amount.");
+    assert_true(tj_buffer_append(b, (tj_buffer_byte*)"HELLO", 5));
+    assert_true(tj_buffer_append(b, (tj_buffer_byte*)"HELLO", 5));
+    assert_true(tj_buffer_appendString(b, "HELLO"));
 
-  tj_buffer_appendAsString(buff1, "HELLO");
-  tj_buffer_appendAsString(buff1, "HELLO");
+    tj_buffer_reset(b);
 
-  if (tj_buffer_getAllocated(buff1) != 16)
-    FAIL("Incorrect allocation.");
+    assert_true(tj_buffer_appendAsString(b, "HELLO"));
+    assert_true(tj_buffer_appendAsString(b, "HELLO"));
 
-  if (tj_buffer_getUsed(buff1) != 11)
-    FAIL("Incorrect used amount.");
+    assert_int_equal(tj_buffer_getAllocated(b), 16);
+    assert_int_equal(tj_buffer_getUsed(b), 11);
+    assert_string_equal(tj_buffer_getAsString(b), "HELLOHELLO");
+}
 
-  if (strcmp(tj_buffer_getAsString(buff1), "HELLOHELLO"))
-    FAIL("Accumulated reset string incorrect.");
+static void test_fileStream1(void **state) {
+    tj_buffer *b = *state;
 
-  printf("Res: '%s'\n", tj_buffer_getAsString(buff1));
-
-  //--------------------------------------------
-  tj_buffer_reset(buff1);
-
-  FILE *f;
-  if ((f=fopen("test/data/mushi", "r")) == 0) {
-    FAIL("Could not read test file test/data/mushi.");
-  } else {
-    tj_buffer_appendFileStream(buff1, f);
+    FILE *f = fopen("test/data/mushi", "r");
+    assert_non_null(f);
+    assert_true(tj_buffer_appendFileStream(b, f));
     fclose(f);
-  }
 
-  tj_buffer_appendString(buff1, "");
-  printf("Res: '%s'\n", tj_buffer_getAsString(buff1));
+    assert_true(tj_buffer_appendString(b, ""));
+    assert_string_equal(tj_buffer_getAsString(b), "MUSHI");
+}
 
-  if (strcmp(tj_buffer_getAsString(buff1), "MUSHI"))
-    FAIL("String read from file incorrect.");
+static void test_fileStream2(void **state) {
+    tj_buffer *b = *state;
+    FILE *f;
 
-  //--------------------------------------------
-  tj_buffer_reset(buff1);
-
-  if ((f=fopen("test/data/mushi", "r")) == 0) {
-    FAIL("Could not read test file test/data/mushi.");
-  } else {
-    tj_buffer_appendFileStream(buff1, f);
+    f = fopen("test/data/mushi", "r");
+    assert_non_null(f);
+    assert_true(tj_buffer_appendFileStream(b, f));
     fclose(f);
-  }
-  if ((f=fopen("test/data/mushi", "r")) == 0) {
-    FAIL("Could not read test file test/data/mushi.");
-  } else {
-    tj_buffer_appendFileStream(buff1, f);
+
+    f = fopen("test/data/mushi", "r");
+    assert_non_null(f);
+    assert_true(tj_buffer_appendFileStream(b, f));
     fclose(f);
-  }
-  if ((f=fopen("test/data/mushi", "r")) == 0) {
-    FAIL("Could not read test file test/data/mushi.");
-  } else {
-    tj_buffer_appendFileStream(buff1, f);
+
+    f = fopen("test/data/mushi", "r");
+    assert_non_null(f);
+    assert_true(tj_buffer_appendFileStream(b, f));
     fclose(f);
-  }
-  if ((f=fopen("test/data/mushi", "r")) == 0) {
-    FAIL("Could not read test file test/data/mushi.");
-  } else {
-    tj_buffer_appendFileStream(buff1, f);
+
+    f = fopen("test/data/mushi", "r");
+    assert_non_null(f);
+    assert_true(tj_buffer_appendFileStream(b, f));
     fclose(f);
-  }
 
-  tj_buffer_appendString(buff1, "");
-  printf("Res: '%s'\n", tj_buffer_getAsString(buff1));
+    assert_true(tj_buffer_appendString(b, ""));
+    assert_string_equal(tj_buffer_getAsString(b), "MUSHIMUSHIMUSHIMUSHI");
+}
 
-  if (strcmp(tj_buffer_getAsString(buff1), "MUSHIMUSHIMUSHIMUSHI"))
-    FAIL("String read from file incorrect.");
+static void test_fileStream3(void **state) {
+    tj_buffer *b = *state;
 
+    FILE *f = fopen(argv0, "rb");
+    assert_non_null(f);
 
-  //--------------------------------------------
-  tj_buffer_reset(buff1);
-
-  if ((f=fopen(argv[0], "rb")) == 0) {
-    FAIL("Could not read test file %s.", argv[0]);
-  } else {
     fseek(f, 0L, SEEK_END);
     size_t flen = ftell(f);
     fseek(f, 0L, SEEK_SET);
 
-    tj_buffer_appendFileStream(buff1, f);
-
-    if (tj_buffer_getUsed(buff1) != flen)
-      FAIL("Read %zu bytes from %s, expected %zu.",
-           tj_buffer_getUsed(buff1), argv[0], flen);
-
-    printf("Read %s; buffer[%zu/%zu]\n", argv[0],
-           tj_buffer_getUsed(buff1), tj_buffer_getAllocated(buff1));
-
+    assert_true(tj_buffer_appendFileStream(b, f));
     fclose(f);
-  }
 
-  //--------------------------------------------
-  tj_buffer_reset(buff1);
+    assert_int_equal(tj_buffer_getUsed(b), flen);
+}
 
-  if ((f=fopen(argv[0], "rb")) == 0) {
-    FAIL("Could not read test file %s.", argv[0]);
-  } else {
+static void test_appendFile(void **state) {
+    tj_buffer *b = *state;
+
+    FILE *f = fopen(argv0, "rb");
+    assert_non_null(f);
+
     fseek(f, 0L, SEEK_END);
     size_t flen = ftell(f);
     fseek(f, 0L, SEEK_SET);
     fclose(f);
 
-    tj_buffer_appendFile(buff1, argv[0]);
+    assert_true(tj_buffer_appendFile(b, argv0));
 
-    if (tj_buffer_getUsed(buff1) != flen)
-      FAIL("Read %zu bytes from %s, expected %zu.",
-           tj_buffer_getUsed(buff1), argv[0], flen);
+    assert_int_equal(tj_buffer_getUsed(b), flen);
+}
 
-    printf("Read %s; buffer[%zu/%zu]\n", argv[0],
-           tj_buffer_getUsed(buff1), tj_buffer_getAllocated(buff1));
-  }
+int main(int argc, char *argv[]) {
+    if (argc > 0) {
+        argv0 = argv[0];
+    }
 
-  //--------------------------------------------
-  tj_buffer_finalize(buff1);
+    const UnitTest tests[] = {
+        unit_test_setup_teardown(test_append1, setup, teardown),
+        unit_test_setup_teardown(test_append2, setup, teardown),
+        unit_test_setup_teardown(test_appendString, setup, teardown),
+        unit_test_setup_teardown(test_reset1, setup, teardown),
+        unit_test_setup_teardown(test_reset2, setup, teardown),
+        unit_test_setup_teardown(test_fileStream1, setup, teardown),
+        unit_test_setup_teardown(test_fileStream2, setup, teardown),
+        unit_test_setup_teardown(test_fileStream3, setup, teardown),
+        unit_test_setup_teardown(test_appendFile, setup, teardown),
+    };
 
-  if (fail) {
-    printf("** There were errors.\n");
-    return -1;
-  }
-
-  printf("Done.\n");
-
-  return 0;
-  // end main
+    return run_tests(tests);
 }

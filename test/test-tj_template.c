@@ -22,111 +22,125 @@
  * SOFTWARE.
  */
 
-#include <stdio.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
+
+#include "cmocka.h"
 
 #include "tj_buffer.h"
 #include "tj_template.h"
 
-int fail = 0;
+struct data {
+    tj_template_variables *vars;
+    tj_buffer *source;
+    tj_buffer *target;
+};
 
-#define FAIL(M, ...) {fail = 1; printf("FAIL: " M "\n", ##__VA_ARGS__);}
+static void setup(void **state) {
+    struct data *data = malloc(sizeof(*data));
+    assert_non_null(data);
 
-int
-main(int argc, char *argv[])
-{
+    data->vars = tj_template_variables_create();
+    assert_non_null(data->vars);
 
-  tj_buffer *target = tj_buffer_create(0);
-  tj_buffer *src = tj_buffer_create(0);
+    data->source = tj_buffer_create(0);
+    assert_non_null(data->source);
 
-  //------------------------------------------------------------
-  tj_buffer_appendString(src, "HEL$XLO!");
+    data->target = tj_buffer_create(0);
+    assert_non_null(data->target);
 
-  tj_template_variables *vars = tj_template_variables_create();
-  tj_template_variables_setFromString(vars, "X", "mushi");
+    *state = (void*)data;
+}
 
-  tj_template_variables_apply(vars, target, src);
+static void teardown(void **state) {
+    struct data *data = *state;
 
-  printf("Res: '%s'\n", tj_buffer_getAsString(target));
+    if (data != NULL) {
+        if (data->vars != NULL) {
+            tj_template_variables_finalize(data->vars);
+        }
+        if (data->source != NULL) {
+            tj_buffer_finalize(data->source);
+        }
+        if (data->target != NULL) {
+            tj_buffer_finalize(data->target);
+        }
+        free(data);
+    }
+}
 
-  if (strcmp(tj_buffer_getAsString(target), "HELmushiLO!")) {
-    FAIL("Did not get expected accumulated string.");
-  }
+static void test_1(void **state) {
+    struct data *data = *state;
 
+    assert_true(tj_buffer_appendString(data->source, "HEL$XLO!"));
+    assert_true(tj_template_variables_setFromString(data->vars, "X", "mushi"));
 
-  //------------------------------------------------------------
-  tj_template_variables_finalize(vars);
-  vars = tj_template_variables_create();
+    assert_true(tj_template_variables_apply(
+                data->vars, data->target, data->source));
 
-  tj_buffer_reset(target);
-  tj_buffer_reset(src);
-  tj_buffer_appendString(src, "A $MAN, a $PLAN, a $CANAL, Panama!");
+    assert_string_equal(tj_buffer_getAsString(data->target), "HELmushiLO!");
+}
 
-  tj_template_variables_setFromString(vars, "MAN", "man");
-  tj_template_variables_setFromString(vars, "PLAN", "plan");
-  tj_template_variables_setFromString(vars, "CANAL", "canal");
+static void test_2(void **state) {
+    struct data *data = *state;
 
-  tj_template_variables_apply(vars, target, src);
+    assert_true(tj_buffer_appendString(
+                data->source, "A $MAN, a $PLAN, a $CANAL, Panama!"));
 
-  printf("Res: '%s'\n", tj_buffer_getAsString(target));
+    assert_true(tj_template_variables_setFromString(
+                data->vars, "MAN", "man"));
+    assert_true(tj_template_variables_setFromString(
+                data->vars, "PLAN", "plan"));
+    assert_true(tj_template_variables_setFromString(
+                data->vars, "CANAL", "canal"));
 
-  if (strcmp(tj_buffer_getAsString(target),
-             "A man, a plan, a canal, Panama!")) {
-    FAIL("Did not get expected accumulated string.");
-  }
+    assert_true(tj_template_variables_apply(
+                data->vars, data->target, data->source));
 
-  //------------------------------------------------------------
-  tj_template_variables_finalize(vars);
-  vars = tj_template_variables_create();
+    assert_string_equal(tj_buffer_getAsString(data->target),
+                "A man, a plan, a canal, Panama!");
+}
 
-  tj_buffer_reset(target);
-  tj_buffer_reset(src);
-  tj_buffer_appendString(src, "$MUSHI");
+static void test_3(void **state) {
+    struct data *data = *state;
 
-  tj_template_variables_setFromFile(vars, "MUSHI", "test/data/mushi");
+    assert_true(tj_buffer_appendString(data->source, "$MUSHI"));
+    assert_true(tj_template_variables_setFromFile(
+                data->vars, "MUSHI", "test/data/mushi"));
 
-  tj_template_variables_apply(vars, target, src);
+    assert_true(tj_template_variables_apply(
+                data->vars, data->target, data->source));
 
-  printf("Res: '%s'\n", tj_buffer_getAsString(target));
+    assert_string_equal(tj_buffer_getAsString(data->target), "MUSHI");
+}
 
-  if (strcmp(tj_buffer_getAsString(target), "MUSHI")) {
-    FAIL("Did not get expected accumulated string.");
-  }
+static void test_4(void **state) {
+    struct data *data = *state;
 
-  //------------------------------------------------------------
-  tj_template_variables_finalize(vars);
-  vars = tj_template_variables_create();
+    assert_true(tj_buffer_appendString(data->source, "$MUSHI"));
+    assert_true(tj_template_variables_setFromString(data->vars, "X", "mushi"));
+    assert_true(tj_template_variables_setFromFile(
+                data->vars, "MUSHI", "test/data/mushi2"));
 
-  tj_buffer_reset(target);
-  tj_buffer_reset(src);
-  tj_buffer_appendString(src, "$MUSHI");
+    tj_template_variables_setRecurse(data->vars, "MUSHI", 1);
 
-  tj_template_variables_setFromString(vars, "X", "mushi");
-  tj_template_variables_setFromFile(vars, "MUSHI", "test/data/mushi2");
-  tj_template_variables_setRecurse(vars, "MUSHI", 1);
+    assert_true(tj_template_variables_apply(
+                data->vars, data->target, data->source));
 
-  tj_template_variables_apply(vars, target, src);
+    assert_string_equal(tj_buffer_getAsString(data->target),
+                "mushi mushi mushi");
+}
 
-  printf("Res: '%s'\n", tj_buffer_getAsString(target));
+int main(int argc, char *argv[]) {
+    const UnitTest tests[] = {
+        unit_test_setup_teardown(test_1, setup, teardown),
+        unit_test_setup_teardown(test_2, setup, teardown),
+        unit_test_setup_teardown(test_3, setup, teardown),
+        unit_test_setup_teardown(test_4, setup, teardown),
+    };
 
-  if (strcmp(tj_buffer_getAsString(target), "mushi mushi mushi")) {
-    FAIL("Did not get expected accumulated string.");
-  }
-
-  //------------------------------------------------------------
-  tj_buffer_finalize(target);
-  tj_buffer_finalize(src);
-
-  if (fail) {
-    printf("** There were errors.\n");
-    return -1;
-  }
-
-  tj_template_variables_finalize(vars);
-
-  printf("Done.\n");
-
-  return 0;
-
-  // end main
+    return run_tests(tests);
 }

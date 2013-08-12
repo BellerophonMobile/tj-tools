@@ -30,7 +30,6 @@
 
 #include "cmocka.h"
 
-/* Code uses this flag to redefine things like asserts. */
 #define UNIT_TESTING
 #include "tj_array.c"
 
@@ -40,16 +39,18 @@
 #define VALUE_C 15
 #define VALUE_D 16
 
-/* Testing array manipulation functions. */
-
 static void setup(void **state) {
-    struct tj_array *array = tj_array_new(0);
-    *state = array;
+    struct tj_array *array = tj_array_create(0);
+    assert_non_null(array);
+
+    *state = (void*)array;
 }
 
 static void teardown(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
-    tj_array_del(array);
+    struct tj_array *array = *state;
+    if (array != NULL) {
+        tj_array_finalize(array);
+    }
 }
 
 static void init_array(struct tj_array *array, int *a, int *b, int *c,
@@ -59,26 +60,26 @@ static void init_array(struct tj_array *array, int *a, int *b, int *c,
     *c = VALUE_C;
     *d = VALUE_D;
 
-    tj_array_append(array, a);
-    tj_array_append(array, b);
-    tj_array_append(array, c);
-    tj_array_append(array, d);
+    assert_true(tj_array_append(array, a));
+    assert_true(tj_array_append(array, b));
+    assert_true(tj_array_append(array, c));
+    assert_true(tj_array_append(array, d));
     assert_int_equal(tj_array_count(array), 4);
 }
 
 static void test_array_empty(void **state) {
-    struct tj_array *array = tj_array_new(0);
+    struct tj_array *array = tj_array_create(0);
 
     assert_int_equal(tj_array_count(array), 0);
     assert_int_equal(tj_array_capacity(array), 0);
     expect_assert_failure(tj_array_get(array, 0));
     expect_assert_failure(tj_array_remove(array, 0));
 
-    tj_array_del(array);
+    tj_array_finalize(array);
 }
 
 static void test_array_preallocated(void **state) {
-    struct tj_array *array = tj_array_new(11);
+    struct tj_array *array = tj_array_create(11);
 
     assert_int_equal(tj_array_count(array), 0);
     assert_int_equal(tj_array_capacity(array), 11);
@@ -91,7 +92,7 @@ static void test_array_preallocated(void **state) {
     assert_int_equal(tj_array_capacity(array), 11);
     assert_int_equal(*(int*)tj_array_get(array, 0), VALUE_A);
 
-    tj_array_del(array);
+    tj_array_finalize(array);
 }
 
 static void test_array_append_get(void **state) {
