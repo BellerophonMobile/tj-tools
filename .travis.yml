@@ -3,4 +3,5 @@ compiler:
     - gcc
     - clang
 script:
-    make test
+    - ./waf distclean configure test
+    - ./waf distclean configure --optimize test
