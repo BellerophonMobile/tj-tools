@@ -1,5 +1,8 @@
 *~
 .*.swp
+/.lock*
+/.waf*/
+/build/
 /docs/
 /bin/
 tj_log.db
