@@ -56,7 +56,7 @@ def build(ctx):
     ctx.add_post_fun(waflib.Tools.waf_unit_test.set_exit_code)
 
     if ctx.options.valgrind:
-        ctx.options.testcmd = 'valgrind --error-exitcode=1 --leak-check=full %s'
+        ctx.options.testcmd = 'valgrind --error-exitcode=1 --leak-check=full --show-reachable=yes %s'
 
     ctx(
         name = 'uthash',
