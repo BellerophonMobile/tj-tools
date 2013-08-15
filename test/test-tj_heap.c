@@ -32,6 +32,24 @@
 
 #include "tj_heap.h"
 
+#define INT_PEEK_POP(key, value) do { \
+    assert_true(intheap_peek(heap, &k, &v)); \
+    assert_int_equal(k, key); \
+    assert_string_equal(v, value); \
+    assert_true(intheap_pop(heap, &k, &v)); \
+    assert_int_equal(k, key); \
+    assert_string_equal(v, value); \
+} while (0)
+
+#define FLT_PEEK_POP(key) do { \
+    assert_true(floatheap_peek(heap, &k, &v)); \
+    assert_in_range(k, key, key + 0.1); \
+    assert_string_equal(v, #key); \
+    assert_true(floatheap_pop(heap, &k, &v)); \
+    assert_in_range(k, key, key + 0.1); \
+    assert_string_equal(v, #key); \
+} while (0)
+
 static int intless(int a, int b) { return a  < b; }
 static int intfind(void *d, int k, char *v) { return (strcmp(v, d) == 0); }
 TJ_HEAP_DECL(intheap, int, char *, intless);
@@ -82,53 +100,22 @@ static void test_int_min(void **state) {
     assert_true(intheap_add(heap, 500, "f2"));
     assert_true(intheap_add(heap, 80, "b"));
 
-    int k;
-    char *v;
+    int k = 0;
+    char *v = NULL;
 
-    assert_true(intheap_pop(heap, &k, &v));
-    assert_int_equal(k, 23);
-    assert_string_equal(v, "a1");
+    INT_PEEK_POP(23, "a1");
+    INT_PEEK_POP(23, "a2");
+    INT_PEEK_POP(80, "b");
+    INT_PEEK_POP(90, "c");
+    INT_PEEK_POP(234, "d");
+    INT_PEEK_POP(467, "d");
+    INT_PEEK_POP(468, "e");
+    INT_PEEK_POP(500, "f1");
+    INT_PEEK_POP(500, "f2");
+    INT_PEEK_POP(900, "g");
+    INT_PEEK_POP(923, "h");
 
-    assert_true(intheap_pop(heap, &k, &v));
-    assert_int_equal(k, 23);
-    assert_string_equal(v, "a2");
-
-    assert_true(intheap_pop(heap, &k, &v));
-    assert_int_equal(k, 80);
-    assert_string_equal(v, "b");
-
-    assert_true(intheap_pop(heap, &k, &v));
-    assert_int_equal(k, 90);
-    assert_string_equal(v, "c");
-
-    assert_true(intheap_pop(heap, &k, &v));
-    assert_int_equal(k, 234);
-    assert_string_equal(v, "d");
-
-    assert_true(intheap_pop(heap, &k, &v));
-    assert_int_equal(k, 467);
-    assert_string_equal(v, "d");
-
-    assert_true(intheap_pop(heap, &k, &v));
-    assert_int_equal(k, 468);
-    assert_string_equal(v, "e");
-
-    assert_true(intheap_pop(heap, &k, &v));
-    assert_int_equal(k, 500);
-    assert_string_equal(v, "f1");
-
-    assert_true(intheap_pop(heap, &k, &v));
-    assert_int_equal(k, 500);
-    assert_string_equal(v, "f2");
-
-    assert_true(intheap_pop(heap, &k, &v));
-    assert_int_equal(k, 900);
-    assert_string_equal(v, "g");
-
-    assert_true(intheap_pop(heap, &k, &v));
-    assert_int_equal(k, 923);
-    assert_string_equal(v, "h");
-
+    assert_false(intheap_peek(heap, &k, &v));
     assert_false(intheap_pop(heap, &k, &v));
 }
 
@@ -178,26 +165,13 @@ static void test_float_max(void **state) {
     float k;
     char *v;
 
-    assert_true(floatheap_pop(heap, &k, &v));
-    assert_in_range(k, 7.80, 7.81);
-    assert_string_equal(v, "7.8");
+    FLT_PEEK_POP(7.8);
+    FLT_PEEK_POP(4.0);
+    FLT_PEEK_POP(2.4);
+    FLT_PEEK_POP(0.7);
+    FLT_PEEK_POP(0.3);
 
-    assert_true(floatheap_pop(heap, &k, &v));
-    assert_in_range(k, 4.00, 4.01);
-    assert_string_equal(v, "4.0");
-
-    assert_true(floatheap_pop(heap, &k, &v));
-    assert_in_range(k, 2.40, 2.41);
-    assert_string_equal(v, "2.4");
-
-    assert_true(floatheap_pop(heap, &k, &v));
-    assert_in_range(k, 0.70, 0.71);
-    assert_string_equal(v, "0.7");
-
-    assert_true(floatheap_pop(heap, &k, &v));
-    assert_in_range(k, 0.30, 0.31);
-    assert_string_equal(v, "0.3");
-
+    assert_false(floatheap_peek(heap, &k, &v));
     assert_false(floatheap_pop(heap, &k, &v));
 }
 

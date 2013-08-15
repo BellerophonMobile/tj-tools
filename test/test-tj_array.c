@@ -96,7 +96,7 @@ static void test_array_preallocated(void **state) {
 }
 
 static void test_array_append_get(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = *state;
     int a, b, c, d;
     init_array(array, &a, &b, &c, &d);
 
@@ -108,7 +108,7 @@ static void test_array_append_get(void **state) {
 }
 
 static void test_array_remove1(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = *state;
     int a, b, c, d;
     init_array(array, &a, &b, &c, &d);
 
@@ -121,7 +121,7 @@ static void test_array_remove1(void **state) {
 }
 
 static void test_array_remove2(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = *state;
     int a, b, c, d;
     init_array(array, &a, &b, &c, &d);
 
@@ -134,7 +134,7 @@ static void test_array_remove2(void **state) {
 }
 
 static void test_array_remove3(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = *state;
     int a, b, c, d;
     init_array(array, &a, &b, &c, &d);
 
@@ -147,7 +147,7 @@ static void test_array_remove3(void **state) {
 }
 
 static void test_array_remove4(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = *state;
     int a, b, c, d;
     init_array(array, &a, &b, &c, &d);
 
@@ -160,7 +160,7 @@ static void test_array_remove4(void **state) {
 }
 
 static void test_array_remove5(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = *state;
     int a, b, c, d;
     init_array(array, &a, &b, &c, &d);
 
@@ -175,7 +175,7 @@ static void test_array_remove5(void **state) {
 }
 
 static void test_array_remove6(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = *state;
     int a, b, c, d;
     init_array(array, &a, &b, &c, &d);
 
@@ -190,7 +190,7 @@ static void test_array_remove6(void **state) {
 }
 
 static void test_array_remove7(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = *state;
     int a, b, c, d;
     init_array(array, &a, &b, &c, &d);
 
@@ -205,7 +205,7 @@ static void test_array_remove7(void **state) {
 }
 
 static void test_array_remove8(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = *state;
     int a, b, c, d;
     init_array(array, &a, &b, &c, &d);
 
@@ -218,8 +218,49 @@ static void test_array_remove8(void **state) {
     expect_assert_failure(tj_array_get(array, 0));
 }
 
+static void test_array_removeItem1(void **state) {
+    struct tj_array *array = *state;
+    int a, b, c, d;
+    init_array(array, &a, &b, &c, &d);
+
+    tj_array_removeItem(array, &a);
+    tj_array_removeItem(array, &b);
+    tj_array_removeItem(array, &c);
+    tj_array_removeItem(array, &d);
+
+    assert_int_equal(tj_array_count(array), 0);
+    expect_assert_failure(tj_array_remove(array, 0));
+    expect_assert_failure(tj_array_get(array, 0));
+}
+
+static void test_array_removeItem2(void **state) {
+    struct tj_array *array = *state;
+    int a, b, c, d;
+    init_array(array, &a, &b, &c, &d);
+
+    tj_array_removeItem(array, &d);
+    tj_array_removeItem(array, &c);
+    tj_array_removeItem(array, &b);
+    tj_array_removeItem(array, &a);
+
+    assert_int_equal(tj_array_count(array), 0);
+    expect_assert_failure(tj_array_remove(array, 0));
+    expect_assert_failure(tj_array_get(array, 0));
+}
+
+static void test_array_removeItem3(void **state) {
+    struct tj_array *array = *state;
+    int a, b, c, d;
+    init_array(array, &a, &b, &c, &d);
+
+    int e = 123;
+    expect_assert_failure(tj_array_removeItem(array, &e));
+
+    assert_int_equal(tj_array_count(array), 4);
+}
+
 static void test_array_find1(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = *state;
     int a, b, c, d;
     init_array(array, &a, &b, &c, &d);
 
@@ -234,7 +275,7 @@ static void test_array_find1(void **state) {
 }
 
 static void test_array_find2(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = *state;
     int a, b, c, d;
     init_array(array, &a, &b, &c, &d);
 
@@ -246,7 +287,7 @@ static void test_array_find2(void **state) {
 }
 
 static void test_array_find3(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = *state;
     int a, b, c, d;
     init_array(array, &a, &b, &c, &d);
 
@@ -260,7 +301,7 @@ static void test_array_find3(void **state) {
 }
 
 static void test_array_find4(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = *state;
     int a, b, c, d;
     init_array(array, &a, &b, &c, &d);
 
@@ -274,7 +315,7 @@ static void test_array_find4(void **state) {
 }
 
 static void test_array_find5(void **state) {
-    struct tj_array *array = (struct tj_array*)*state;
+    struct tj_array *array = *state;
 
     int a = VALUE_A;
     int b = VALUE_B;
@@ -292,6 +333,30 @@ static void test_array_find5(void **state) {
     assert_int_equal(tj_array_find(array, &d), -1);
 }
 
+static void test_array_clear1(void **state) {
+    struct tj_array *array = *state;
+
+    assert_int_equal(tj_array_count(array), 0);
+    assert_int_equal(tj_array_capacity(array), 0);
+
+    tj_array_clear(array);
+
+    assert_int_equal(tj_array_count(array), 0);
+    assert_int_equal(tj_array_capacity(array), 0);
+}
+
+static void test_array_clear2(void **state) {
+    struct tj_array *array = *state;
+    int a, b, c, d;
+    init_array(array, &a, &b, &c, &d);
+
+    assert_int_equal(tj_array_count(array), 4);
+
+    tj_array_clear(array);
+
+    assert_int_equal(tj_array_count(array), 0);
+}
+
 int main(int argc, char **argv) {
     const UnitTest tests[] = {
         unit_test(test_array_empty),
@@ -305,11 +370,17 @@ int main(int argc, char **argv) {
         unit_test_setup_teardown(test_array_remove6, setup, teardown),
         unit_test_setup_teardown(test_array_remove7, setup, teardown),
         unit_test_setup_teardown(test_array_remove8, setup, teardown),
+        unit_test_setup_teardown(test_array_removeItem1, setup, teardown),
+        unit_test_setup_teardown(test_array_removeItem2, setup, teardown),
+        unit_test_setup_teardown(test_array_removeItem3, setup, teardown),
         unit_test_setup_teardown(test_array_find1, setup, teardown),
         unit_test_setup_teardown(test_array_find2, setup, teardown),
         unit_test_setup_teardown(test_array_find3, setup, teardown),
         unit_test_setup_teardown(test_array_find4, setup, teardown),
         unit_test_setup_teardown(test_array_find5, setup, teardown),
+        unit_test_setup_teardown(test_array_clear1, setup, teardown),
+        unit_test_setup_teardown(test_array_clear2, setup, teardown),
     };
+
     return run_tests(tests);
 }

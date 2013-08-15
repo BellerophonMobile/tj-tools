@@ -22,63 +22,79 @@
  * SOFTWARE.
  */
 
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "cmocka.h"
+
 /**
  * If TAG is defined, the tj_log.h header will define shorthand macros
  * such as CRITICAL and VERBOSE.  The full ones remain available.
  */
 #define TAG "test-tj_log"
-#include <tj_log.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "tj_log.h"
 
 // Defines an option log output channel
-#include <tj_log_sqlite.h>
+#include "tj_log_sqlite.h"
 
+struct args {
+    tj_log_level level;
+    char *component;
+    char *file;
+    char *func;
+    int line;
+    tj_error *error;
+    char *msg;
+};
 
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-int
-main(int argc, char *argv[])
-{
-  char *component = argv[0];
+static void log_func(void *data, tj_log_level level, const char *component,
+        const char *file, const char *func, int line, tj_error *error,
+        const char *msg) {
+    struct args *args = data;
 
-  /*
-   * This shows how to add an optional output to logging.  A printer
-   * to stdout is the default (logcat on Android).  There can be any
-   * number of output channels.  This one uses as SQLite database.
-   *
-   */
-  tj_log_outchannel *chan;
-  if ((chan = tj_log_sqlite_create(0)) == 0) {
-    TJ_LOG_CRITICAL(component, "Could not create sqlite outchannel.");
-    return -1;
-  }
-  tj_log_addOutChannel(chan);
+    args->level = level;
+    args->component = strdup(component);
+    args->file = strdup(file);
+    args->func = strdup(func);
+    args->line = line;
+    args->error = error;
+    args->msg = strdup(msg);
+}
 
+static void test_1(void **state) {
+    struct args args;
+    memset(&args, 0, sizeof(args));
 
-  /*
-   * TODO: Ability to remove channels (i.e., the default).
-   * TODO: Component filters and remapping.
-   */
+    tj_log_outchannel *out = tj_log_outchannel_create(&args,
+            &log_func, NULL);
+    assert_non_null(out);
 
+    assert_false(tj_log_addOutChannel(out));
 
-  TJ_LOG_VERBOSE(component, "This is a verbose output.");
+    tj_log_log(TJ_LOG_LEVEL_CRITICAL, "tj_log", "test-tj_log.c", "test_1",
+            1, NULL, "Hello: %s", "World");
 
-  TJ_LOG_LOGIC(component, "This is a logic output: Result is %d.", 4);
+    assert_int_equal(args.level, TJ_LOG_LEVEL_CRITICAL);
+    assert_string_equal(args.component, "tj_log");
+    assert_string_equal(args.file, "test-tj_log.c");
+    assert_string_equal(args.func, "test_1");
+    assert_int_equal(args.line, 1);
+    assert_null(args.error);
+    assert_string_equal(args.msg, "Hello: World");
 
-  // Use the shorthand form.
-  COMPONENT("This is a component output with string '%s'.", "mushi");
+    free(args.component);
+    free(args.file);
+    free(args.func);
+    free(args.msg);
+}
 
-  // Use the shorthand form.
-  CRITICAL("This is a critical error output.");
+int main(int argc, char **argv) {
+    const UnitTest tests[] = {
+        unit_test(test_1),
+    };
 
-  tj_error *err = tj_error_create(TJ_ERROR_MISSING_SERVICE, "Bad mojo!");
-  TJ_LOG_ERROR(component, err,
-               "This is a critical error output with an error.");
-
-  return 0;
-
-  // end main
+    return run_tests(tests);
 }

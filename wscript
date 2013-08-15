@@ -20,13 +20,22 @@ def options(ctx):
     opts.add_option('--optimize', action='store_true',
                     help='Build with optimization flags (default debug).')
 
+    opts = ctx.add_option_group('Test Options')
+    opts.add_option('--valgrind', action='store_true',
+                    help='Run tests through valgrind.')
+
 def configure(ctx):
     ctx.load('compiler_c')
     ctx.load('waf_unit_test')
 
     if 'android' in ctx.env.CC[0]:
+        # For tj_log
         ctx.check_cc(lib='log')
 
+    # For tj_searchpathlist
+    ctx.check_cc(lib='dl')
+
+    # For tj_log_sqlite
     ctx.check_cc(lib='sqlite3')
 
     if ctx.env.CC_NAME == 'gcc':
@@ -40,8 +49,13 @@ def configure(ctx):
             ctx.env.CFLAGS += ['-O2', '-g']
 
 def build(ctx):
+    # Add extra unit testing output
     ctx.post_mode = waflib.Build.POST_LAZY
     ctx.add_post_fun(waflib.Tools.waf_unit_test.summary)
+    ctx.add_post_fun(waflib.Tools.waf_unit_test.set_exit_code)
+
+    if ctx.options.valgrind:
+        ctx.options.testcmd = 'valgrind --error-exitcode=1 --leak-check=full %s'
 
     ctx(
         name = 'uthash',
@@ -50,7 +64,7 @@ def build(ctx):
 
     ctx.stlib(
         target = 'tj-tools',
-        use = ['uthash', 'LOG', 'SQLITE3'],
+        use = ['uthash', 'LOG', 'DL', 'SQLITE3'],
         export_includes = 'src',
         source = [
             'src/tj_array.c',
@@ -73,76 +87,21 @@ def build(ctx):
         source = 'deps/cmocka/src/cmocka.c',
     )
 
+    _create_test(ctx, 'tj_array')
+    _create_test(ctx, 'tj_buffer')
+    _create_test(ctx, 'tj_error')
+    _create_test(ctx, 'tj_heap')
+    _create_test(ctx, 'tj_template')
+    _create_test(ctx, 'tj_log')
+    _create_test(ctx, 'tj_searchpathlist')
+    _create_test(ctx, 'tj_solibrary')
+
+def _create_test(ctx, src):
     ctx.program(
         features = 'test',
-        target = 'test-tj_buffer',
-        # Run from the root directory
+        target = 'test-' + src,
+        # Execute test from root project directory, for data files.
         ut_cwd = ctx.top_dir,
         use = ['tj-tools', 'cmocka'],
-        source = 'test/test-tj_buffer.c',
+        source = 'test/test-{}.c'.format(src),
     )
-
-    ctx.program(
-        features = 'test',
-        target = 'test-tj_template',
-        # Run from the root directory
-        ut_cwd = ctx.top_dir,
-        use = ['tj-tools', 'cmocka'],
-        source = 'test/test-tj_template.c',
-    )
-
-    ctx.program(
-        features = 'test',
-        target = 'test-tj_heap',
-        use = ['tj-tools', 'cmocka'],
-        source = 'test/test-tj_heap.c',
-    )
-
-    ctx.program(
-        features = 'test',
-        target = 'test-tj_array',
-        use = ['tj-tools', 'cmocka'],
-        source = 'test/test-tj_array.c',
-    )
-
-    #ctx.program(
-    #    target = 'test-tj_log',
-    #    use = ['tj-tools'],
-    #    source = 'test/test-tj_log.c',
-    #)
-
-    #ctx.program(
-    #    target = 'test-tj_error',
-    #    use = 'tj-tools',
-    #    source = 'test/test-tj_error.c',
-    #)
-
-
-## Setup for unit tests.
-
-def test(ctx):
-    global run_tests
-    run_tests = True
-    waflib.Options.options.all_tests = True
-    waflib.Options.commands = ['build'] + waflib.Options.commands
-
-class Test(waflib.Build.BuildContext):
-    'Context class for our unit testing command.'
-    cmd = 'test'
-    fun = 'test'
-
-def _test_runnable_status(self):
-    'Control when unit tests are run'
-    global run_tests
-    if not run_tests:
-        return waflib.Task.SKIP_ME
-    else:
-        return old_runnable_status(self)
-
-# Hack to control when the unit tests are run
-run_tests = False
-
-# Monkey-patch this function to take over control of when unit-tests are run.
-# Normally, they are run every time you build.
-old_runnable_status = waflib.Tools.waf_unit_test.utest.runnable_status
-waflib.Tools.waf_unit_test.utest.runnable_status = _test_runnable_status

@@ -28,11 +28,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <ctype.h>
+
 #include "cmocka.h"
 
 #include "tj_buffer.h"
 
 static char *argv0 = "";
+
+struct data {
+    tj_buffer *a;
+    tj_buffer *b;
+};
 
 static void setup(void **state) {
     tj_buffer *b = tj_buffer_create(0);
@@ -44,6 +51,35 @@ static void teardown(void **state) {
     tj_buffer *b = *state;
     if (b != NULL) {
         tj_buffer_finalize(b);
+    }
+}
+
+static void setup2(void **state) {
+    struct data *data = malloc(sizeof(*data));
+    assert_non_null(data);
+
+    data->a = tj_buffer_create(0);
+    assert_non_null(data->a);
+
+    data->b = tj_buffer_create(0);
+    assert_non_null(data->b);
+
+    *state = (void*)data;
+}
+
+static void teardown2(void **state) {
+    struct data *data = *state;
+
+    if (data != NULL) {
+        if (data->a != NULL) {
+            tj_buffer_finalize(data->a);
+        }
+
+        if (data->b != NULL) {
+            tj_buffer_finalize(data->b);
+        }
+
+        free(data);
     }
 }
 
@@ -180,6 +216,155 @@ static void test_appendFile(void **state) {
     assert_int_equal(tj_buffer_getUsed(b), flen);
 }
 
+static void test_getAtIndex(void **state) {
+    tj_buffer *b = *state;
+
+    assert_true(tj_buffer_appendString(b, "HELLO"));
+    assert_true(tj_buffer_getBytesAtIndex(b, 3) == tj_buffer_getBytes(b) + 3);
+}
+
+static void test_pop1(void **state) {
+    tj_buffer *b = *state;
+
+    assert_true(tj_buffer_appendString(b, "HELLO"));
+
+    tj_buffer_popFront(b, 1);
+    assert_int_equal(tj_buffer_getUsed(b), 5);
+    assert_string_equal(tj_buffer_getAsString(b), "ELLO");
+}
+
+static void test_pop2(void **state) {
+    tj_buffer *b = *state;
+
+    assert_true(tj_buffer_appendString(b, "HELLO"));
+
+    tj_buffer_popBack(b, 1);
+    assert_int_equal(tj_buffer_getUsed(b), 5);
+    assert_memory_equal(tj_buffer_getAsString(b), "HELLO", 5);
+}
+
+static void test_pop3(void **state) {
+    tj_buffer *b = *state;
+
+    assert_true(tj_buffer_appendString(b, "HELLO"));
+
+    tj_buffer_popFront(b, 6);
+    assert_int_equal(tj_buffer_getUsed(b), 0);
+}
+
+static void test_pop4(void **state) {
+    tj_buffer *b = *state;
+
+    assert_true(tj_buffer_appendString(b, "HELLO"));
+
+    tj_buffer_popBack(b, 6);
+    assert_int_equal(tj_buffer_getUsed(b), 0);
+}
+
+static void test_pop5(void **state) {
+    tj_buffer *b = *state;
+
+    assert_true(tj_buffer_appendString(b, "HELLO"));
+
+    tj_buffer_popFront(b, 10);
+    assert_int_equal(tj_buffer_getUsed(b), 0);
+}
+
+static void test_pop6(void **state) {
+    tj_buffer *b = *state;
+
+    assert_true(tj_buffer_appendString(b, "HELLO"));
+
+    tj_buffer_popBack(b, 10);
+    assert_int_equal(tj_buffer_getUsed(b), 0);
+}
+
+static void test_pop7(void **state) {
+    tj_buffer *b = *state;
+
+    assert_true(tj_buffer_appendString(b, "HELLO"));
+
+    tj_buffer_popFront(b, 0);
+    assert_int_equal(tj_buffer_getUsed(b), 6);
+    assert_string_equal(tj_buffer_getAsString(b), "HELLO");
+}
+
+static void test_pop8(void **state) {
+    tj_buffer *b = *state;
+
+    assert_true(tj_buffer_appendString(b, "HELLO"));
+
+    tj_buffer_popBack(b, 0);
+    assert_int_equal(tj_buffer_getUsed(b), 6);
+    assert_string_equal(tj_buffer_getAsString(b), "HELLO");
+}
+
+static void test_strip1(void **state) {
+    tj_buffer *b = *state;
+
+    assert_true(tj_buffer_append(b, (tj_buffer_byte*)"  HELLO WORLD  ", 15));
+    tj_buffer_strip(b, &isspace);
+
+    assert_int_equal(tj_buffer_getUsed(b), 11);
+    assert_memory_equal(tj_buffer_getAsString(b), "HELLO WORLD", 11);
+}
+
+static void test_strip2(void **state) {
+    tj_buffer *b = *state;
+
+    assert_true(tj_buffer_append(b, (tj_buffer_byte*)"11HELLO WORLD22", 15));
+    tj_buffer_strip(b, &isdigit);
+
+    assert_int_equal(tj_buffer_getUsed(b), 11);
+    assert_memory_equal(tj_buffer_getAsString(b), "HELLO WORLD", 11);
+}
+
+static void test_appendBuffer1(void **state) {
+    struct data *data = *state;
+
+    assert_true(tj_buffer_appendBuffer(data->a, data->b));
+
+    assert_int_equal(tj_buffer_getAllocated(data->a), 0);
+    assert_int_equal(tj_buffer_getUsed(data->a), 0);
+}
+
+static void test_appendBuffer2(void **state) {
+    struct data *data = *state;
+
+    assert_true(tj_buffer_appendString(data->a, "HELLO"));
+
+    assert_true(tj_buffer_appendBuffer(data->a, data->b));
+
+    assert_int_equal(tj_buffer_getAllocated(data->a), 6);
+    assert_int_equal(tj_buffer_getUsed(data->a), 6);
+    assert_string_equal(tj_buffer_getAsString(data->a), "HELLO");
+}
+
+static void test_appendBuffer3(void **state) {
+    struct data *data = *state;
+
+    assert_true(tj_buffer_appendString(data->b, "HELLO"));
+
+    assert_true(tj_buffer_appendBuffer(data->a, data->b));
+
+    assert_int_equal(tj_buffer_getAllocated(data->a), 6);
+    assert_int_equal(tj_buffer_getUsed(data->a), 6);
+    assert_string_equal(tj_buffer_getAsString(data->a), "HELLO");
+}
+
+static void test_appendBuffer4(void **state) {
+    struct data *data = *state;
+
+    assert_true(tj_buffer_appendString(data->a, "HELLO"));
+    assert_true(tj_buffer_appendString(data->b, "WORLD"));
+
+    assert_true(tj_buffer_appendBuffer(data->a, data->b));
+
+    assert_int_equal(tj_buffer_getAllocated(data->a), 12);
+    assert_int_equal(tj_buffer_getUsed(data->a), 12);
+    assert_memory_equal(tj_buffer_getBytes(data->a), "HELLO\0WORLD", 12);
+}
+
 int main(int argc, char *argv[]) {
     if (argc > 0) {
         argv0 = argv[0];
@@ -195,6 +380,22 @@ int main(int argc, char *argv[]) {
         unit_test_setup_teardown(test_fileStream2, setup, teardown),
         unit_test_setup_teardown(test_fileStream3, setup, teardown),
         unit_test_setup_teardown(test_appendFile, setup, teardown),
+        unit_test_setup_teardown(test_getAtIndex, setup, teardown),
+        unit_test_setup_teardown(test_pop1, setup, teardown),
+        unit_test_setup_teardown(test_pop2, setup, teardown),
+        unit_test_setup_teardown(test_pop3, setup, teardown),
+        unit_test_setup_teardown(test_pop4, setup, teardown),
+        unit_test_setup_teardown(test_pop5, setup, teardown),
+        unit_test_setup_teardown(test_pop6, setup, teardown),
+        unit_test_setup_teardown(test_pop7, setup, teardown),
+        unit_test_setup_teardown(test_pop8, setup, teardown),
+        unit_test_setup_teardown(test_strip1, setup, teardown),
+        unit_test_setup_teardown(test_strip2, setup, teardown),
+
+        unit_test_setup_teardown(test_appendBuffer1, setup2, teardown2),
+        unit_test_setup_teardown(test_appendBuffer2, setup2, teardown2),
+        unit_test_setup_teardown(test_appendBuffer3, setup2, teardown2),
+        unit_test_setup_teardown(test_appendBuffer4, setup2, teardown2),
     };
 
     return run_tests(tests);

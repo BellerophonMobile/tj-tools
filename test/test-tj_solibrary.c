@@ -28,56 +28,46 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <ctype.h>
-
 #include "cmocka.h"
 
-#include "tj_error.h"
+#include "tj_solibrary.h"
 
-static void test_create1(void **state) {
-    tj_error *err = tj_error_create(TJ_ERROR_FAILURE, "message");
-    assert_non_null(err);
+typedef int (*print_func)(const char *format, ...);
 
-    assert_int_equal(tj_error_getCode(err), TJ_ERROR_FAILURE);
-    assert_string_equal(tj_error_getMessage(err), "[FAILURE]: message");
+static const char *LIB_PATH = "/usr/lib/libc.so.6";
 
-    tj_error_finalize(err);
+static void setup(void **state) {
+    tj_solibrary *so = tj_solibrary_create();
+    assert_non_null(so);
+
+    *state = (void*)so;
 }
 
-static void test_create2(void **state) {
-    tj_error *err = tj_error_create(TJ_ERROR_FAILURE, "Foo %d Bar %d", 5, 10);
-    assert_non_null(err);
+#include <stdio.h>
 
-    assert_int_equal(tj_error_getCode(err), TJ_ERROR_FAILURE);
-    assert_string_equal(tj_error_getMessage(err), "[FAILURE]: Foo 5 Bar 10");
+static void teardown(void **state) {
+    tj_solibrary *so = *state;
 
-    tj_error_finalize(err);
+    if (so != NULL) {
+        tj_solibrary_finalize(so);
+    }
 }
 
-static void test_append1(void **state) {
-    tj_error *err = tj_error_create(TJ_ERROR_FAILURE, "A");
-    assert_non_null(err);
+static void test_1(void **state) {
+    tj_solibrary *so = *state;
 
-    assert_int_equal(tj_error_getCode(err), TJ_ERROR_FAILURE);
+    tj_solibrary_entry *entry = tj_solibrary_load(so, LIB_PATH);
+    assert_non_null(entry);
 
-    tj_error_appendMessage(err, "B");
-    assert_string_equal(tj_error_getMessage(err),
-            "[FAILURE]: A\n[FAILURE]: B");
+    print_func f = tj_solibrary_entry_getSymbol(entry, "printf");
+    assert_non_null(f);
 
-    tj_error_appendMessage(err, "C");
-    assert_string_equal(tj_error_getMessage(err),
-            "[FAILURE]: A\n[FAILURE]: B\n[FAILURE]: C");
-
-    assert_int_equal(tj_error_getCode(err), TJ_ERROR_FAILURE);
-
-    tj_error_finalize(err);
+    assert_int_equal(f("Hello\n"), 6);
 }
 
 int main(int argc, char *argv[]) {
     const UnitTest tests[] = {
-        unit_test(test_create1),
-        unit_test(test_create2),
-        unit_test(test_append1),
+        unit_test_setup_teardown(test_1, setup, teardown),
     };
 
     return run_tests(tests);
