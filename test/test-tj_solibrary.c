@@ -32,9 +32,9 @@
 
 #include "tj_solibrary.h"
 
-typedef int (*print_func)(const char *format, ...);
+typedef double (*pow_func)(double, double);
 
-static const char *LIB_PATH = "/usr/lib/libc.so.6";
+static const char *LIB_PATH = "/usr/lib/libm.so";
 
 static void setup(void **state) {
     tj_solibrary *so = tj_solibrary_create();
@@ -57,10 +57,10 @@ static void test_1(void **state) {
     tj_solibrary_entry *entry = tj_solibrary_load(so, LIB_PATH);
     assert_non_null(entry);
 
-    print_func f = tj_solibrary_entry_getSymbol(entry, "printf");
+    pow_func f = tj_solibrary_entry_getSymbol(entry, "pow");
     assert_non_null(f);
 
-    assert_int_equal(f("Hello\n"), 6);
+    assert_int_equal(((int)f(2, 2)), 4);
 }
 
 int main(int argc, char *argv[]) {
