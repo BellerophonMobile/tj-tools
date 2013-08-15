@@ -43,8 +43,6 @@ static void setup(void **state) {
     *state = (void*)so;
 }
 
-#include <stdio.h>
-
 static void teardown(void **state) {
     tj_solibrary *so = *state;
 
