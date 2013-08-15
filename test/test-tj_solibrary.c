@@ -30,11 +30,12 @@
 
 #include "cmocka.h"
 
+#include "tj_searchpathlist.h"
 #include "tj_solibrary.h"
 
 typedef double (*pow_func)(double, double);
 
-static const char *LIB_PATH = "/usr/lib/libm.so";
+static const int MAX_PATH_LEN = 256;
 
 static void setup(void **state) {
     tj_solibrary *so = tj_solibrary_create();
@@ -54,7 +55,17 @@ static void teardown(void **state) {
 static void test_1(void **state) {
     tj_solibrary *so = *state;
 
-    tj_solibrary_entry *entry = tj_solibrary_load(so, LIB_PATH);
+    tj_searchpathlist *s = tj_searchpathlist_create();
+    tj_searchpathlist_add(s, "/usr/lib");
+    tj_searchpathlist_add(s, "/usr/lib/x86_64-linux-gnu");
+
+    char result[MAX_PATH_LEN];
+    memset(result, 0, MAX_PATH_LEN);
+    assert_true(tj_searchpathlist_locate(s, "libm.so.6",
+                result, MAX_PATH_LEN));
+    tj_searchpathlist_finalize(s);
+
+    tj_solibrary_entry *entry = tj_solibrary_load(so, result);
     assert_non_null(entry);
 
     pow_func f = tj_solibrary_entry_getSymbol(entry, "pow");
