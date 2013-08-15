@@ -58,6 +58,7 @@ static void test_1(void **state) {
     tj_searchpathlist *s = tj_searchpathlist_create();
     tj_searchpathlist_add(s, "/usr/lib");
     tj_searchpathlist_add(s, "/usr/lib/x86_64-linux-gnu");
+    tj_searchpathlist_add(s, "/lib/x86_64-linux-gnu");
 
     char result[MAX_PATH_LEN];
     memset(result, 0, MAX_PATH_LEN);
