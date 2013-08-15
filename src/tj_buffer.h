@@ -81,7 +81,7 @@ tj_buffer_reset(tj_buffer *b);
  * Get the currently used extent of the buffer.
  *
  * \param b The buffer to operate on.
- * 
+ *
  * \return The number of bytes consumed by data since creation or the
  * last reset.
  */
@@ -90,7 +90,7 @@ tj_buffer_getUsed(tj_buffer *b);
 
 /**
  * Get how much memory is currently allocated for the buffer.
- * 
+ *
  * \param b The buffer to operate on.
  *
  * \return The current total internal memory allocation for the
