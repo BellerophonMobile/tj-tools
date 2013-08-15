@@ -3,5 +3,5 @@ compiler:
     - gcc
     - clang
 script:
-    - ./waf distclean configure test
-    - ./waf distclean configure --optimize test
+    - ./waf distclean configure build --valgrind
+    - ./waf distclean configure --optimize build --valgrind
