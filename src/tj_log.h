@@ -25,7 +25,9 @@
 #ifndef __tj_log_h__
 #define __tj_log_h__
 
+#include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "tj_error.h"
 
@@ -47,6 +49,11 @@ typedef enum {
 #ifndef TJ_LOG_CRITICAL
 #define TJ_LOG_CRITICAL(component, msg, ...)                           \
   TJ_LOG_LOG(TJ_LOG_LEVEL_CRITICAL, component, 0, msg, ##__VA_ARGS__)
+#endif
+
+#ifndef TJ_LOG_ERRNO
+#define TJ_LOG_ERRNO(component, msg, ...) \
+  TJ_LOG_LOG(TJ_LOG_LEVEL_CRITICAL, component, 0, msg ": (%d) %s", ##__VA_ARGS__, errno, strerror(errno));
 #endif
 
 #ifndef TJ_LOG_ERROR
@@ -92,6 +99,7 @@ typedef enum {
 #define LOGIC(msg, ...) TJ_LOG_LOGIC(TAG, msg, ##__VA_ARGS__)
 #define COMPONENT(msg, ...) TJ_LOG_COMPONENT(TAG, msg, ##__VA_ARGS__)
 #define CRITICAL(msg, ...) TJ_LOG_CRITICAL(TAG, msg, ##__VA_ARGS__)
+#define ERRNO(msg, ...) TJ_LOG_ERRNO(TAG, msg, ##__VA_ARGS__)
 #define ERROR(e, msg, ...) TJ_LOG_ERROR(TAG, e, msg, ##__VA_ARGS__)
 #define OUTPUT(msg, ...) TJ_LOG_OUTPUT(TAG, msg, ##__VA_ARGS__)
 #endif
