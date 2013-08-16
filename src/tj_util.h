@@ -27,34 +27,71 @@
 
 #include <stdlib.h>
 
-#ifdef NDEBUG
-#define TJ_UTIL_ABORT(msg) abort()
-#else
-#define TJ_UTIL_ABORT(msg) TJ_LOG_CRITICAL("tj_util", msg), abort()
-#endif
+#define TJ_UTIL_ABORT(msg) CRITICAL(msg), abort()
 
-// E.g.: tj_kb_naivesqlite *naive = TJ_ALLOC(tj_kb_naivesqlite);
-#define TJ_ALLOC(type) \
+/**
+ * Convenience macro to malloc, and check the result, aborting on failure.
+ *
+ * You should have the TAG macro defined, this uses tj_log to print errors.
+ */
+#define TJ_MALLOC(type) \
   ((calloc(1, sizeof(type))) ? : \
    (TJ_UTIL_ABORT("Could not allocate " #type "."), NULL))
 
 // E.g.: tj_kb_naivesqlite *naive;
 //       TJ_CALLOC(tj_kb_naivesqlite, naive, goto error);
-#define TJ_CALLOC(type, var, err) \
-  if ((var = calloc(1, sizeof(type))) == 0) { \
-    TJ_LOG_CRITICAL("tj_util", "Could not allocate " #type "."); \
-    err; \
-  }
 
-#define TJ_STRDUP(str) \
-  ((strdup(str)) ? : \
-   (TJ_UTIL_ABORT("Could not duplicate " #str "."), NULL))
+/**
+ * Convenience macro to calloc, and check the result.
+ *
+ * Jumps to "error" label on error.
+ *
+ * You should have the TAG macro defined, this uses tj_log to print errors.
+ *
+ * \code{.c}
+ * struct foo *foo_new() {
+ *     struct foo *bar;
+ *     TJ_CALLOC(bar, goto error);
+ *
+ *     return bar;
+ *
+ * error:
+ *     return NULL
+ * }
+ * \endcode
+ */
+#define TJ_CALLOC(var) \
+    if (((var) = calloc(1, sizeof(*(var)))) == NULL) { \
+        CRITICAL("Could not allocate " #var "."); \
+        goto error; \
+    }
 
-#define TJ_STRNDUP(str, n) \
-  ((strndup(str, n)) ? : \
-   (TJ_UTIL_ABORT("Could not duplicate " #str "."), NULL))
+/**
+ * Convenience macro to strdup, checking the result.
+ *
+ * Jumps to "error" label on error.
+ */
+#define TJ_STRDUP(var, str) \
+    if (((var) = strdup(str)) == NULL) { \
+        CRITICAL("Could not duplicate " #str "."); \
+        goto error; \
+    }
+
+/**
+ * Convenience macro to strndup, checking the result.
+ *
+ * Jumps to "error" label on error.
+ */
+#define TJ_STRNDUP(var, str, n) \
+    if (((var) = strndup(str, n)) == NULL) { \
+        CRITICAL("Could not duplicate " #str "."); \
+        goto error; \
+    }
 
 #define TJ_CHECKMEM(exp) \
-  ((exp) ? : (TJ_UTIL_ABORT(#exp " returned NULL"), NULL))
+    if ((exp) == NULL) { \
+        CRITICAL(#exp " returned NULL"); \
+        goto error;
+    }
 
 #endif // __tj_util_h__
