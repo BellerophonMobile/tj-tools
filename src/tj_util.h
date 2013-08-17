@@ -60,38 +60,42 @@
  * }
  * \endcode
  */
-#define TJ_CALLOC(var) \
+#define TJ_CALLOC(var) do { \
     if (((var) = calloc(1, sizeof(*(var)))) == NULL) { \
         CRITICAL("Could not allocate " #var "."); \
         goto error; \
-    }
+    } \
+} while (0)
 
 /**
  * Convenience macro to strdup, checking the result.
  *
  * Jumps to "error" label on error.
  */
-#define TJ_STRDUP(var, str) \
+#define TJ_STRDUP(var, str) do { \
     if (((var) = strdup(str)) == NULL) { \
         CRITICAL("Could not duplicate " #str "."); \
         goto error; \
-    }
+    } \
+} while (0)
 
 /**
  * Convenience macro to strndup, checking the result.
  *
  * Jumps to "error" label on error.
  */
-#define TJ_STRNDUP(var, str, n) \
+#define TJ_STRNDUP(var, str, n) do { \
     if (((var) = strndup(str, n)) == NULL) { \
         CRITICAL("Could not duplicate " #str "."); \
         goto error; \
-    }
+    } \
+} while (0)
 
-#define TJ_CHECKMEM(exp) \
+#define TJ_CHECKMEM(exp) do { \
     if ((exp) == NULL) { \
         CRITICAL(#exp " returned NULL"); \
-        goto error;
-    }
+        goto error; \
+    } \
+} while (0)
 
 #endif // __tj_util_h__
