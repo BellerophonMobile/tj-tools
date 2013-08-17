@@ -34,7 +34,7 @@
  *
  * You should have the TAG macro defined, this uses tj_log to print errors.
  */
-#define TJ_MALLOC(type) \
+#define TJ_ALLOC(type) \
   ((calloc(1, sizeof(type))) ? : \
    (TJ_UTIL_ABORT("Could not allocate " #type "."), NULL))
 
@@ -62,6 +62,13 @@
  */
 #define TJ_CALLOC(var) do { \
     if (((var) = calloc(1, sizeof(*(var)))) == NULL) { \
+        CRITICAL("Could not allocate " #var "."); \
+        goto error; \
+    } \
+} while (0)
+
+#define TJ_MALLOC(var, size) do { \
+    if (((var) = malloc(size)) == NULL) { \
         CRITICAL("Could not allocate " #var "."); \
         goto error; \
     } \
