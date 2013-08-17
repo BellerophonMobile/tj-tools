@@ -36,9 +36,7 @@
 
 #define MAKE_WRAPPER(func, type) \
     type __real_ ## func; \
-    type __wrap_ ## func { \
-        LOGIC("Calling: " #func); \
-        return (type)mock(); }
+    type __wrap_ ## func { return (type)mock(); }
 
 MAKE_WRAPPER(calloc(size_t nmemb, size_t size), void *);
 MAKE_WRAPPER(strndup(const char *s, size_t n), char *);
@@ -67,6 +65,10 @@ static void test_calloc_fail(void **state) {
 
     int *a;
     TJ_CALLOC(a);
+
+    /* This should never be called.  Just used to stop it from being optimized
+     * away. */
+    printf("A: %d\n", *a);
     free(a);
 
     return;
@@ -101,6 +103,10 @@ static void test_strdup_fail(void **state) {
     TJ_STRDUP(s, "Hello");
     free(s);
 
+    /* This should never be called.  Just used to stop it from being optimized
+     * away. */
+    printf("S: %s\n", s);
+
     return;
 
 error:
@@ -128,6 +134,10 @@ static void test_strndup_fail(void **state) {
 
     char *s;
     TJ_STRNDUP(s, "Hello", 5);
+
+    /* This should never be called.  Just used to stop it from being optimized
+     * away. */
+    printf("S: %s\n", s);
     free(s);
 
     return;
