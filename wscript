@@ -92,12 +92,16 @@ def build(ctx):
     _create_test(ctx, 'tj_buffer')
     _create_test(ctx, 'tj_error')
     _create_test(ctx, 'tj_heap')
-    _create_test(ctx, 'tj_template')
     _create_test(ctx, 'tj_log')
     _create_test(ctx, 'tj_searchpathlist')
     _create_test(ctx, 'tj_solibrary')
+    _create_test(ctx, 'tj_template')
+    _create_test(ctx, 'tj_util', ['calloc', 'strdup', 'strndup'])
 
-def _create_test(ctx, src):
+def _create_test(ctx, src, wrappers=None):
+    if wrappers is None:
+        wrappers = []
+
     ctx.program(
         features = 'test',
         target = 'test-' + src,
@@ -105,4 +109,5 @@ def _create_test(ctx, src):
         ut_cwd = ctx.top_dir,
         use = ['tj-tools', 'cmocka'],
         source = 'test/test-{}.c'.format(src),
+        linkflags = ['-Wl,--wrap=' + symbol for symbol in wrappers],
     )
