@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <time.h>
 
 #ifdef __ANDROID__
 #include <android/log.h>
@@ -218,14 +219,23 @@ tj_log_fprintfLog(void *data,
       out = TJ_LOG_STREAM;
   }
 
+  time_t rawtime;
+  struct tm timeinfo;
+  time(&rawtime);
+  localtime_r(&rawtime, &timeinfo);
+  char date[64];
+  strftime(date, 64, "%Y/%m/%d %H:%M:%S", &timeinfo);
+
   if (level == TJ_LOG_LEVEL_OUTPUT) {
-    fprintf(out, "%s\n", msg);
+    fprintf(out, "%s %s\n", date, msg);
+  } else if (level == TJ_LOG_LEVEL_COMPONENT) {
+    fprintf(out, "%s %s %s\n", date, component, msg);
   } else {
     if (level == TJ_LOG_LEVEL_CRITICAL)
       fprintf(out, "[%s] ", tj_log_level_labels[level]);
 
-    fprintf(out, "%s %s:%s:%d: %s\n",
-            component, file, func, line, msg);
+    fprintf(out, "%s %s %s:%s:%d: %s\n",
+            date, component, file, func, line, msg);
   }
 
   if (error != 0)
@@ -279,7 +289,8 @@ tj_log_logcatLog(void *data,
     break;
   }
 
-  if (level == TJ_LOG_LEVEL_OUTPUT) {
+  if (level == TJ_LOG_LEVEL_OUTPUT ||
+      level == TJ_LOG_LEVEL_COMPONENT) {
     __android_log_print(pri, component, "%s", msg);
   } else {
     __android_log_print(pri, component, "%s:%s:%d: %s",
