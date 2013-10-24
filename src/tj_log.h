@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013 Joe Kopena <tjkopena@gmail.com>
+ *                    Tom Wambold <tom5760@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -124,6 +125,11 @@ typedef struct tj_log_outchannel tj_log_outchannel;
 
 extern tj_log_outchannel tj_log_fprintfChannel;
 
+#ifdef __ANDROID__
+extern tj_log_outchannel tj_log_logcatChannel;
+#endif
+
+
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 tj_log_outchannel *
@@ -153,14 +159,5 @@ void tj_log_setData(tj_log_outchannel *out, void *data);
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-
-void
-tj_log_fprintfLog(void *data,
-                  tj_log_level level, const char *component,
-                  const char *file, const char *func, int line,
-                  tj_error *error, const char *msg);
-
-void
-tj_log_fprintfLogFinalize(void *data);
 
 #endif // __tj_log_h__

@@ -64,12 +64,21 @@ tj_log_finalize(void);
 // This is done like this so that you could add the fprintf channel in
 // addition to the logcat channel on Android.
 
+void
+tj_log_fprintfLog(void *data,
+                  tj_log_level level, const char *component,
+                  const char *file, const char *func, int line,
+                  tj_error *error, const char *msg);
+
+void
+tj_log_fprintfLogFinalize(void *data);
+
 tj_log_outchannel tj_log_fprintfChannel =
   {
     .m_allocated = 0,
     .m_data = 0,
     .log = &tj_log_fprintfLog,
-    .finalize = 0,
+    .finalize = &tj_log_fprintfLogFinalize,
     .m_next = 0
   };
 
