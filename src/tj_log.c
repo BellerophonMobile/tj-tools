@@ -39,7 +39,8 @@ const char *tj_log_level_labels[] =
     "VERBOSE",
     "LOGIC",
     "COMPONENT",
-    "CRITICAL"
+    "CRITICAL",
+    "OUTPUT",
   };
 
 struct tj_log_outchannel {
@@ -223,18 +224,18 @@ tj_log_fprintfLog(void *data,
   struct tm timeinfo;
   time(&rawtime);
   localtime_r(&rawtime, &timeinfo);
-  char date[64];
-  strftime(date, 64, "%Y/%m/%d %H:%M:%S", &timeinfo);
+  char date[20];
+  strftime(date, 20, "%Y/%m/%d %H:%M:%S", &timeinfo);
 
   if (level == TJ_LOG_LEVEL_OUTPUT) {
     fprintf(out, "%s %s\n", date, msg);
-  } else if (level == TJ_LOG_LEVEL_COMPONENT) {
-    fprintf(out, "%s %s %s\n", date, component, msg);
-  } else {
-    if (level == TJ_LOG_LEVEL_CRITICAL)
-      fprintf(out, "[%s] ", tj_log_level_labels[level]);
 
-    fprintf(out, "%s %s %s:%s:%d: %s\n",
+  } else if (level != TJ_LOG_LEVEL_CRITICAL) {
+    fprintf(out, "%s %s %s\n", date, component, msg);
+
+  } else {
+    fprintf(out, "[%s] %s %s %s:%s:%d: %s\n",
+            tj_log_level_labels[level],
             date, component, file, func, line, msg);
   }
 
@@ -289,9 +290,9 @@ tj_log_logcatLog(void *data,
     break;
   }
 
-  if (level == TJ_LOG_LEVEL_OUTPUT ||
-      level == TJ_LOG_LEVEL_COMPONENT) {
+  if (level != TJ_LOG_LEVEL_CRITICAL) {
     __android_log_print(pri, component, "%s", msg);
+
   } else {
     __android_log_print(pri, component, "%s:%s:%d: %s",
                         file, func, line, msg);
