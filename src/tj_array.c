@@ -43,8 +43,8 @@ struct tj_array {
 
 static const size_t DEFAULT_LIST_SIZE = 5;
 
-struct tj_array *tj_array_create(size_t capacity) {
-    struct tj_array *array = malloc(sizeof(*array));
+tj_array *tj_array_create(size_t capacity) {
+    tj_array *array = malloc(sizeof(*array));
     if (array == NULL) {
         return NULL;
     }
@@ -64,27 +64,27 @@ struct tj_array *tj_array_create(size_t capacity) {
     return array;
 }
 
-void tj_array_finalize(struct tj_array *array) {
+void tj_array_finalize(tj_array *array) {
     if (array->array != NULL) {
         free(array->array);
     }
     free(array);
 }
 
-size_t tj_array_count(const struct tj_array *array) {
+size_t tj_array_count(const tj_array *array) {
     return array->count;
 }
 
-size_t tj_array_capacity(const struct tj_array *array) {
+size_t tj_array_capacity(const tj_array *array) {
     return array->capacity;
 }
 
-void *tj_array_get(const struct tj_array *array, size_t index) {
+void *tj_array_get(const tj_array *array, size_t index) {
     assert(index < array->count);
     return array->array[index];
 }
 
-int tj_array_append(struct tj_array *array, void *item) {
+int tj_array_append(tj_array *array, void *item) {
     if (array->count == array->capacity) {
         if (array->array == NULL) {
             array->capacity = DEFAULT_LIST_SIZE;
@@ -105,7 +105,7 @@ int tj_array_append(struct tj_array *array, void *item) {
     return 1;
 }
 
-void tj_array_remove(struct tj_array *array, size_t index) {
+void tj_array_remove(tj_array *array, size_t index) {
     assert(index < array->count);
     if (index < array->capacity - 1) {
         size_t remaining = (array->capacity - index - 1) * sizeof(void*);
@@ -114,15 +114,15 @@ void tj_array_remove(struct tj_array *array, size_t index) {
     array->count -= 1;
 }
 
-void tj_array_removeItem(struct tj_array *array, void *item) {
+void tj_array_removeItem(tj_array *array, void *item) {
     tj_array_remove(array, tj_array_find(array, item));
 }
 
-void tj_array_clear(struct tj_array *array) {
+void tj_array_clear(tj_array *array) {
     array->count = 0;
 }
 
-ssize_t tj_array_find(const struct tj_array *array, void *item) {
+ssize_t tj_array_find(const tj_array *array, void *item) {
     size_t i;
     for (i = 0; i < array->count; i++) {
         if (array->array[i] == item) {

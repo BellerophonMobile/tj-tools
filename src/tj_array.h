@@ -32,26 +32,26 @@
 
 #pragma once
 
-struct tj_array;
+typedef struct tj_array tj_array;
 
 /**
  * Create a new dynamic array with some initial capacity.
  *
  * \param capacity Initial capacity, may be 0.
  */
-struct tj_array *tj_array_create(size_t capacity);
+tj_array *tj_array_create(size_t capacity);
 
 /** Frees a dynamic array. */
-void tj_array_finalize(struct tj_array *array);
+void tj_array_finalize(tj_array *array);
 
 /** Returns the number of elements in the array. */
-size_t tj_array_count(const struct tj_array *array);
+size_t tj_array_count(const tj_array *array);
 
 /** Returns the capacity of the array. */
-size_t tj_array_capacity(const struct tj_array *array);
+size_t tj_array_capacity(const tj_array *array);
 
 /** Returns an element in the array. */
-void *tj_array_get(const struct tj_array *array, size_t index);
+void *tj_array_get(const tj_array *array, size_t index);
 
 /**
  * Append an item to a dynamic array.
@@ -60,28 +60,28 @@ void *tj_array_get(const struct tj_array *array, size_t index);
  *
  * \return 0 on failure, 1 otherwise.
  */
-int tj_array_append(struct tj_array *array, void *item);
+int tj_array_append(tj_array *array, void *item);
 
 /**
  * Remove an item at a particular index from a dynamic array.
  *
  * This currently does not resize the array ever.
  */
-void tj_array_remove(struct tj_array *array, size_t index);
+void tj_array_remove(tj_array *array, size_t index);
 
 /**
  * Remove an item from a dynamic array.
  *
  * This currently does not resize the array ever.
  */
-void tj_array_removeItem(struct tj_array *array, void *item);
+void tj_array_removeItem(tj_array *array, void *item);
 
 /** Removes all items from the array. */
-void tj_array_clear(struct tj_array *array);
+void tj_array_clear(tj_array *array);
 
 /**
  * Searches an array for an element, by comparing pointers.
  *
  * \return -1 if item not found.
  */
-ssize_t tj_array_find(const struct tj_array *array, void *item);
+ssize_t tj_array_find(const tj_array *array, void *item);
