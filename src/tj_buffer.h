@@ -198,10 +198,12 @@ tj_buffer_appendAsString(tj_buffer *b, const char *str);
 
 /**
  * Add a formatted string to the end of the buffer, including the null
- * terminator, growing the buffer allocation if necessary.  The last
- * byte of the previous buffer is assumed to be a null terminator and
- * is overwritten.  This function can therefore be called iteratively
- * to construct a string.
+ * terminator, growing the buffer allocation if necessary.  If the
+ * internal memory allocation cannot be grown to encompass all of the
+ * data, none of it is written and the previous buffer contents and
+ * size are maintained.  The last byte of the previous buffer is
+ * assumed to be a null terminator and is overwritten.  This function
+ * can therefore be called iteratively to construct a string.
  *
  * \param b The buffer to operate on.
  * \param str Null terminated string.
