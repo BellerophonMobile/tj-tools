@@ -196,6 +196,21 @@ tj_buffer_appendString(tj_buffer *b, const char *str);
 int
 tj_buffer_appendAsString(tj_buffer *b, const char *str);
 
+/**
+ * Add a formatted string to the end of the buffer, including the null
+ * terminator, growing the buffer allocation if necessary.  The last
+ * byte of the previous buffer is assumed to be a null terminator and
+ * is overwritten.  This function can therefore be called iteratively
+ * to construct a string.
+ *
+ * \param b The buffer to operate on.
+ * \param str Null terminated string.
+ *
+ * \return 0 on failure, 1 otherwise.
+ */
+int
+tj_buffer_printf(tj_buffer *b, const char *fmt, ...);
+
 
 /**
  * Read a file or file stream into the buffer.  The given file handle

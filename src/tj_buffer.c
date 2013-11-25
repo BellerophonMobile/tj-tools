@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "tj_buffer.h"
 
@@ -228,7 +229,8 @@ tj_buffer_appendAsString(tj_buffer *b, const char *str)
   if (b->m_used + n > b->m_n) {
     if ((b->m_buff = (tj_buffer_byte *) realloc(ot=b->m_buff,
                                                 b->m_used+n)) == 0) {
-      TJ_ERROR("Could not increase buffer from %zu to %zu.", b->m_n, b->m_used+n);
+      TJ_ERROR("Could not increase buffer from %zu to %zu.",
+               b->m_n, b->m_used+n);
       b->m_buff = ot;
       return 0;
     }
@@ -245,6 +247,66 @@ tj_buffer_appendAsString(tj_buffer *b, const char *str)
   TJ_LOG("Appended as string %zu bytes from string; buffer[%zu/%zu].", n, b->m_used, b->m_n);
   return 1;
   // end tj_buffer_appendAsString
+}
+
+int
+tj_buffer_printf(tj_buffer *b, const char *fmt, ...)
+{
+  va_list ap;
+  va_start(ap, fmt);
+  va_list cp;
+  int n, t;
+
+  int err = 1;
+  tj_buffer_byte *ot;
+
+  while (1) {
+    va_copy(cp, ap); // Don't do on Windows?  See utstring.
+
+    if (b->m_used == 0)
+      n = vsnprintf((char *) b->m_buff, t=b->m_n,
+                    fmt, cp);
+    else
+      n = vsnprintf((char *) &b->m_buff[b->m_used-1], t=(b->m_n-(b->m_used-1)),
+                    fmt, cp);
+
+    va_end(cp);
+
+    //-- The string fit into the given space
+    if (n > -1 && n < t) {
+      b->m_used += n + 1;
+      TJ_LOG("Printed %d bytes to buffer[%zu/%zu]; fmt '%s'.",
+             n+1, b->m_n, b->m_used, fmt);
+      break;
+    }
+
+
+    if (n > -1) {
+
+      //-- Reallocate for the calculated length
+      if ((b->m_buff = (tj_buffer_byte *) realloc(ot=b->m_buff,
+                                                  b->m_used+n+1)) == 0) {
+        TJ_ERROR("Could not increase buffer from %zu to %zu.",
+                 b->m_n, b->m_used+n+1);
+        b->m_buff = ot;
+        err = 0;
+        goto done;
+      }
+
+      b->m_n = b->m_used + n + 1;
+
+    } else {
+      TJ_ERROR("Could not vsnprintf to tj_buffer.");
+      goto done;
+    }
+  }
+
+ done:
+  va_end(ap);
+
+  return err;
+
+  // end tj_buffer_printf
 }
 
 //----------------------------------------------------------------------

@@ -365,6 +365,30 @@ static void test_appendBuffer4(void **state) {
     assert_memory_equal(tj_buffer_getBytes(data->a), "HELLO\0WORLD", 12);
 }
 
+
+static void test_printf1(void **state) {
+  tj_buffer *buff = *state;
+
+  assert_true(tj_buffer_printf(buff, "HELLO"));
+  assert_string_equal(tj_buffer_getBytes(buff), "HELLO");
+}
+
+static void test_printf2(void **state) {
+  tj_buffer *buff = *state;
+
+  assert_true(tj_buffer_printf(buff, "HELLO %d", 7));
+  assert_string_equal(tj_buffer_getBytes(buff), "HELLO 7");
+}
+
+static void test_printf3(void **state) {
+  tj_buffer *buff = *state;
+
+  assert_true(tj_buffer_printf(buff, "HELLO %d", 7));
+  assert_true(tj_buffer_printf(buff, "WORLD %s", "banana"));
+  assert_string_equal(tj_buffer_getBytes(buff), "HELLO 7WORLD banana");
+}
+
+
 int main(int argc, char *argv[]) {
     if (argc > 0) {
         argv0 = argv[0];
@@ -373,14 +397,20 @@ int main(int argc, char *argv[]) {
     const UnitTest tests[] = {
         unit_test_setup_teardown(test_append1, setup, teardown),
         unit_test_setup_teardown(test_append2, setup, teardown),
+
         unit_test_setup_teardown(test_appendString, setup, teardown),
+
         unit_test_setup_teardown(test_reset1, setup, teardown),
         unit_test_setup_teardown(test_reset2, setup, teardown),
+
         unit_test_setup_teardown(test_fileStream1, setup, teardown),
         unit_test_setup_teardown(test_fileStream2, setup, teardown),
         unit_test_setup_teardown(test_fileStream3, setup, teardown),
+
         unit_test_setup_teardown(test_appendFile, setup, teardown),
+
         unit_test_setup_teardown(test_getAtIndex, setup, teardown),
+
         unit_test_setup_teardown(test_pop1, setup, teardown),
         unit_test_setup_teardown(test_pop2, setup, teardown),
         unit_test_setup_teardown(test_pop3, setup, teardown),
@@ -389,6 +419,7 @@ int main(int argc, char *argv[]) {
         unit_test_setup_teardown(test_pop6, setup, teardown),
         unit_test_setup_teardown(test_pop7, setup, teardown),
         unit_test_setup_teardown(test_pop8, setup, teardown),
+
         unit_test_setup_teardown(test_strip1, setup, teardown),
         unit_test_setup_teardown(test_strip2, setup, teardown),
 
@@ -396,6 +427,10 @@ int main(int argc, char *argv[]) {
         unit_test_setup_teardown(test_appendBuffer2, setup2, teardown2),
         unit_test_setup_teardown(test_appendBuffer3, setup2, teardown2),
         unit_test_setup_teardown(test_appendBuffer4, setup2, teardown2),
+
+        unit_test_setup_teardown(test_printf1, setup, teardown),
+        unit_test_setup_teardown(test_printf2, setup, teardown),
+        unit_test_setup_teardown(test_printf3, setup, teardown),
     };
 
     return run_tests(tests);

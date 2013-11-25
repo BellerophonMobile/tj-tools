@@ -97,7 +97,7 @@ def build(ctx):
     )
 
     ## Unit tests
-    if False:  # Commented out for now to skip Android build problems
+    if True:  # Commented out for now to skip Android build problems
 
         ctx.stlib(
             target = 'cmocka',
