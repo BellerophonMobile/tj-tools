@@ -227,11 +227,11 @@ tj_log_log(tj_log_level level, const char *component,
            const char *file, const char *func, int line,
            tj_error *error, const char *m, ...)
 {
-  char msg[255]; // Allocated on stack to be thread safe.
+  char msg[TJ_LOG_MAXLENGTH]; // Allocated on stack to be thread safe.
 
   va_list ap;
   va_start(ap, m);
-  vsnprintf(msg, 255, m, ap);
+  vsnprintf(msg, TJ_LOG_MAXLENGTH, m, ap);
   va_end(ap);
 
   tj_log_outchannel *out = tj_log_channelStack;

@@ -32,6 +32,10 @@
 
 #include "tj_error.h"
 
+
+#define TJ_LOG_MAXLENGTH  528
+
+
 typedef enum {
   TJ_LOG_LEVEL_VERBOSE,
   TJ_LOG_LEVEL_LOGIC,
