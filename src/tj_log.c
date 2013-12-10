@@ -163,6 +163,46 @@ tj_log_addOutChannel(tj_log_outchannel *out)
   // end tj_log_addOutChannel
 }
 
+void
+tj_log_removeOutChannel(tj_log_outchannel *out)
+{
+
+  tj_log_outchannel *top = tj_log_channelStack;
+  tj_log_outchannel *prev = 0;
+
+  while (top != 0 && top != out) {
+    prev = top;
+    top = top->m_next;
+  }
+
+  if (top == 0)
+    return;
+
+  if (prev != 0)
+    prev->m_next = top->m_next;
+
+  tj_log_outchannel_finalize(out);
+
+  // end to_log_removeOutChannel
+}
+
+//----------------------------------------------------------------------
+int
+tj_log_removeLogcatChannel(void)
+{
+
+  #ifdef __ANDROID__
+    tj_log_removeOutChannel(tj_log_logcatChannel);
+  #endif
+
+  // This is necessary so that cgo doesn't cause a warning about an
+  // unused variable 'a'...
+  return 0;
+
+  // end tj_log_removeLogcatChannel
+}
+
+//----------------------------------------------------------------------
 //----------------------------------------------------------------------
 void
 tj_log_finalize(void)

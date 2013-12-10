@@ -147,6 +147,24 @@ tj_log_outchannel_create(void *data,
 int tj_log_addOutChannel(tj_log_outchannel *out);
 
 /**
+ * Remove a channel from which log messages are output.  The channel
+ * will be finalized and the caller no longer own the memory.
+ **/
+void
+tj_log_removeOutChannel(tj_log_outchannel *out);
+
+
+/**
+ * Remove logcat output from the stack when compiled for Android.
+ * This is a convenience function for Go, which has no conditional
+ * compilation and thus can't cleanly access tj_log_logcatChannel on
+ * that platform and ignore it otherwise.
+ **/
+int
+tj_log_removeLogcatChannel(void);
+
+
+/**
  * The core logging message function.  In general the macros
  * TJ_LOG_VERBOSE, TJ_LOG_LOGIC, TJ_LOG_COMPONENT, and TJ_LOG_CRITICAL
  * should be used instead.
