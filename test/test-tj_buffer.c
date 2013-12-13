@@ -388,6 +388,25 @@ static void test_printf3(void **state) {
   assert_string_equal(tj_buffer_getBytes(buff), "HELLO 7WORLD banana");
 }
 
+static void test_printf4(void **state) {
+  tj_buffer *buff = *state;
+
+  assert_true(tj_buffer_printf(buff, "HELLO %d", 7));
+  assert_true(tj_buffer_printf(buff, "WORLD %s", "banana"));
+  assert_true(tj_buffer_appendAsString(buff, " apricot"));
+  assert_string_equal(tj_buffer_getBytes(buff), "HELLO 7WORLD banana apricot");
+}
+
+static void test_printf5(void **state) {
+  tj_buffer *buff = *state;
+
+  assert_true(tj_buffer_printf(buff, "HELLO %d", 7));
+  assert_true(tj_buffer_printf(buff, "WORLD %s", "banana"));
+  assert_true(tj_buffer_appendAsString(buff, " apricot"));
+  assert_true(tj_buffer_printf(buff, " Spiderman %d", 3));
+  assert_string_equal(tj_buffer_getBytes(buff), "HELLO 7WORLD banana apricot Spiderman 3");
+}
+
 
 int main(int argc, char *argv[]) {
     if (argc > 0) {
@@ -431,6 +450,8 @@ int main(int argc, char *argv[]) {
         unit_test_setup_teardown(test_printf1, setup, teardown),
         unit_test_setup_teardown(test_printf2, setup, teardown),
         unit_test_setup_teardown(test_printf3, setup, teardown),
+        unit_test_setup_teardown(test_printf4, setup, teardown),
+        unit_test_setup_teardown(test_printf5, setup, teardown),
     };
 
     return run_tests(tests);

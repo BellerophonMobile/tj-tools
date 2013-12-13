@@ -274,9 +274,9 @@ tj_buffer_printf(tj_buffer *b, const char *fmt, ...)
 
     //-- The string fit into the given space
     if (n > -1 && n < t) {
-      b->m_used += n + 1;
+      b->m_used += n + ((b->m_used) ? 0 : 1);
       TJ_LOG("Printed %d bytes to buffer[%zu/%zu]; fmt '%s'.",
-             n+1, b->m_n, b->m_used, fmt);
+             n, b->m_n, b->m_used, fmt);
       break;
     }
 
@@ -285,15 +285,15 @@ tj_buffer_printf(tj_buffer *b, const char *fmt, ...)
 
       //-- Reallocate for the calculated length
       if ((b->m_buff = (tj_buffer_byte *) realloc(ot=b->m_buff,
-                                                  b->m_used+n+1)) == 0) {
+                                                  b->m_used + n + ((b->m_used)?0:1))) == 0) {
         TJ_ERROR("Could not increase buffer from %zu to %zu.",
-                 b->m_n, b->m_used+n+1);
+                 b->m_n, b->m_used+n);
         b->m_buff = ot;
         err = 0;
         goto done;
       }
 
-      b->m_n = b->m_used + n + 1;
+      b->m_n = b->m_used + n + ((b->m_used)?0:1);
 
     } else {
       TJ_ERROR("Could not vsnprintf to tj_buffer.");
