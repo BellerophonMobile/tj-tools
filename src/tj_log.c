@@ -192,7 +192,7 @@ tj_log_removeLogcatChannel(void)
 {
 
   #ifdef __ANDROID__
-    tj_log_removeOutChannel(tj_log_logcatChannel);
+    tj_log_removeOutChannel(&tj_log_logcatChannel);
   #endif
 
   // This is necessary so that cgo doesn't cause a warning about an
