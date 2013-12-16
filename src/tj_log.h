@@ -33,7 +33,7 @@
 #include "tj_error.h"
 
 
-#define TJ_LOG_MAXLENGTH  528
+#define TJ_LOG_MAXLENGTH  1024
 
 
 typedef enum {
@@ -157,6 +157,11 @@ int tj_log_addOutChannel(tj_log_outchannel *out);
 void
 tj_log_removeOutChannel(tj_log_outchannel *out);
 
+/**
+ * Convenience function to remove stdout output from the stack.
+ **/
+int
+tj_log_removePrintfChannel(void);
 
 /**
  * Remove logcat output from the stack when compiled for Android.
