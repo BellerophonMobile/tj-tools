@@ -249,11 +249,26 @@ tj_buffer_appendAsString(tj_buffer *b, const char *str)
   // end tj_buffer_appendAsString
 }
 
+
 int
 tj_buffer_printf(tj_buffer *b, const char *fmt, ...)
 {
+  int res;
+
   va_list ap;
   va_start(ap, fmt);
+
+  res = tj_buffer_vaprintf(b, fmt, ap);
+
+  va_end(ap);
+
+  return res;
+  // end tj_buffer_printf
+}
+
+int
+tj_buffer_vaprintf(tj_buffer *b, const char *fmt, va_list ap)
+{
   va_list cp;
   int n, t;
 
@@ -302,8 +317,6 @@ tj_buffer_printf(tj_buffer *b, const char *fmt, ...)
   }
 
  done:
-  va_end(ap);
-
   return err;
 
   // end tj_buffer_printf

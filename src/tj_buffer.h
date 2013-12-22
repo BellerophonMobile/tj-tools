@@ -213,6 +213,9 @@ tj_buffer_appendAsString(tj_buffer *b, const char *str);
 int
 tj_buffer_printf(tj_buffer *b, const char *fmt, ...);
 
+int
+tj_buffer_vaprintf(tj_buffer *b, const char *fmt, va_list ap);
+
 
 /**
  * Read a file or file stream into the buffer.  The given file handle

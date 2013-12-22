@@ -33,6 +33,7 @@
 
 #include "tj_log.h"
 #include "tj_error.h"
+#include "tj_buffer.h"
 
 const char *tj_log_level_labels[] =
   {
@@ -242,18 +243,30 @@ tj_log_log(tj_log_level level, const char *component,
            const char *file, const char *func, int line,
            tj_error *error, const char *m, ...)
 {
-  char msg[TJ_LOG_MAXLENGTH]; // Allocated on stack to be thread safe.
+  tj_buffer *msg = 0;
 
   va_list ap;
   va_start(ap, m);
-  vsnprintf(msg, TJ_LOG_MAXLENGTH, m, ap);
-  va_end(ap);
+
+  if ((msg = tj_buffer_create(128)) == 0) {
+    TJ_ERROR("No memory for tj_log_log buffer.");
+    goto done;
+  }
+
+  tj_buffer_vaprintf(msg, m, ap);
 
   tj_log_outchannel *out = tj_log_channelStack;
   while (out != 0) {
-    out->log(out->m_data, level, component, file, func, line, error, msg);
+    out->log(out->m_data, level, component, file, func, line, error,
+             tj_buffer_getAsString(msg));
     out = out->m_next;
   }
+
+ done:
+  if (msg)
+    tj_buffer_finalize(msg);
+
+  va_end(ap);
 
   // end tj_log_log
 }
