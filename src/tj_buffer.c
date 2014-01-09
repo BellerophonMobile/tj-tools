@@ -215,10 +215,10 @@ tj_buffer_appendString(tj_buffer *b, const char *str)
   // end tj_buffer_appendString
 }
 
+
 int
-tj_buffer_appendAsString(tj_buffer *b, const char *str)
+tj_buffer_appendAsStringN(tj_buffer *b, const char *str, size_t n)
 {
-  size_t n = strlen(str);
 
   // Buffer is empty, so add space for null, otherwise replace
   if (b->m_used == 0)
@@ -245,9 +245,59 @@ tj_buffer_appendAsString(tj_buffer *b, const char *str)
 
   TJ_LOG("Appended as string %zu bytes from string; buffer[%zu/%zu].", n, b->m_used, b->m_n);
   return 1;
+  // end tj_buffer_appendAsStringN
+}
+
+int
+tj_buffer_appendAsString(tj_buffer *b, const char *str)
+{
+
+  return tj_buffer_appendAsStringN(b, str, strlen(str));
   // end tj_buffer_appendAsString
 }
 
+
+int
+tj_buffer_appendAsStringBackslashEscaped(tj_buffer *b,
+                                         const char *str,
+                                         const char *escape)
+{
+  int res, found;
+  size_t start, ptr, e;
+  char rep[]="\\ ";
+
+  start = 0;
+  while (str[start] != 0) {
+    ptr = start;
+    found = 0;
+    while (str[ptr] != 0 && !found) {
+      for (e = 0; escape[e] != 0; e++) {
+        if (str[ptr] == escape[e]) {
+          found = 1;
+          break;
+        }
+      }
+      if (!found)
+        ptr++;
+    }
+
+    if ((res = tj_buffer_appendAsStringN(b, &str[start], ptr-start)) == 0)
+      return 0;
+    if (found) {
+      rep[1] = escape[e];
+      if ((res = tj_buffer_appendAsStringN(b, rep, 2)) == 0)
+        return 0;
+      ptr++;
+    }
+
+    start = ptr;
+    // end looping overall string
+  }
+
+
+  return 1;
+  // end tj_buffer_appendAsStringBackslashEscaped
+}
 
 int
 tj_buffer_printf(tj_buffer *b, const char *fmt, ...)

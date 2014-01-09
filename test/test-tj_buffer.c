@@ -407,6 +407,36 @@ static void test_printf5(void **state) {
   assert_string_equal(tj_buffer_getBytes(buff), "HELLO 7WORLD banana apricot Spiderman 3");
 }
 
+static void test_escape1(void **state) {
+  tj_buffer *buff = *state;
+
+  assert_true(tj_buffer_appendAsStringBackslashEscaped(buff, "Hello \"Hello\" Hello", "\""));
+  assert_string_equal(tj_buffer_getBytes(buff), "Hello \\\"Hello\\\" Hello");
+}
+
+static void test_escape2(void **state) {
+  tj_buffer *buff = *state;
+
+  assert_true(tj_buffer_appendAsStringBackslashEscaped(buff, "\"Hello\" Hello", "\""));
+  assert_string_equal(tj_buffer_getBytes(buff), "\\\"Hello\\\" Hello");
+}
+
+static void test_escape3(void **state) {
+  tj_buffer *buff = *state;
+
+  assert_true(tj_buffer_appendAsStringBackslashEscaped(buff, "Hello \"Hello\"", "\""));
+  assert_string_equal(tj_buffer_getBytes(buff), "Hello \\\"Hello\\\"");
+}
+
+static void test_escape4(void **state) {
+  tj_buffer *buff = *state;
+
+  assert_true(tj_buffer_appendAsStringBackslashEscaped(buff,
+                                                       "Hello @Hello\" Hello",
+                                                       "\"@"));
+  assert_string_equal(tj_buffer_getBytes(buff), "Hello \\@Hello\\\" Hello");
+}
+
 
 int main(int argc, char *argv[]) {
     if (argc > 0) {
@@ -452,6 +482,11 @@ int main(int argc, char *argv[]) {
         unit_test_setup_teardown(test_printf3, setup, teardown),
         unit_test_setup_teardown(test_printf4, setup, teardown),
         unit_test_setup_teardown(test_printf5, setup, teardown),
+
+        unit_test_setup_teardown(test_escape1, setup, teardown),
+        unit_test_setup_teardown(test_escape2, setup, teardown),
+        unit_test_setup_teardown(test_escape3, setup, teardown),
+        unit_test_setup_teardown(test_escape4, setup, teardown),
     };
 
     return run_tests(tests);

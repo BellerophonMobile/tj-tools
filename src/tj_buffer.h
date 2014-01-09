@@ -180,6 +180,9 @@ tj_buffer_appendBuffer(tj_buffer *b, const tj_buffer *s);
 int
 tj_buffer_appendString(tj_buffer *b, const char *str);
 
+int
+tj_buffer_appendAsStringN(tj_buffer *b, const char *str, size_t n);
+
 /**
  * Add a string to the end of the buffer, including the null
  * terminator, growing the buffer allocation if necessary.  If the
@@ -196,6 +199,11 @@ tj_buffer_appendString(tj_buffer *b, const char *str);
  */
 int
 tj_buffer_appendAsString(tj_buffer *b, const char *str);
+
+int
+tj_buffer_appendAsStringBackslashEscaped(tj_buffer *b,
+                                         const char *str,
+                                         const char *escape);
 
 /**
  * Add a formatted string to the end of the buffer, including the null
