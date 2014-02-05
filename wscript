@@ -42,8 +42,9 @@ def configure(ctx):
 
     if ctx.env.CC_NAME == 'gcc':
         ctx.env.CFLAGS += ['-std=gnu99', '-Wall', '-Wextra', '-Werror',
-                           '-Wno-unused-parameter', '-Wno-sign-compare',
-                           '-Wno-clobbered', '-Wno-unknown-warning-option']
+                           '-Wno-sign-compare', '-Wno-unused-parameter',
+                           '-Wno-unknown-pragmas', '-Wno-pragmas',
+                           '-Wno-unknown-warning-option']
 
         if ctx.options.optimize:
             ctx.env.DEFINES += ['NDEBUG']
