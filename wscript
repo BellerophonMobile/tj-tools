@@ -21,6 +21,8 @@ def options(ctx):
                     help='Build with optimization flags (default debug).')
 
     opts = ctx.add_option_group('Test Options')
+    opts.add_option('--no-test', action='store_true',
+                    help='Don\'t build or run unit tests.')
     opts.add_option('--valgrind', action='store_true',
                     help='Run tests through valgrind.')
 
@@ -81,7 +83,7 @@ def build(ctx):
 
     ctx.stlib(
         target = 'tj-tools',
-        features = 'cc cshlib',
+        features = 'c cshlib',
         use = ['uthash', 'LOG', 'DL', 'SQLITE3'],
         export_includes = 'src',
         source = [
@@ -97,8 +99,7 @@ def build(ctx):
     )
 
     ## Unit tests
-    if True:  # Commented out for now to skip Android build problems
-
+    if not ctx.options.no_test:
         ctx.stlib(
             target = 'cmocka',
             defines = 'HAVE_MALLOC_H',
