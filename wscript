@@ -19,6 +19,10 @@ def options(ctx):
     opts = ctx.add_option_group('Build Options')
     opts.add_option('--optimize', action='store_true',
                     help='Build with optimization flags (default debug).')
+    opts.add_option('--no-solibrary', action='store_true',
+                    help='Disable building tj_solibrary.')
+    opts.add_option('--no-sqlite', action='store_true',
+                    help='Disable building tj_log_sqlite.')
 
     opts = ctx.add_option_group('Test Options')
     opts.add_option('--no-test', action='store_true',
@@ -35,10 +39,14 @@ def configure(ctx):
         ctx.check_cc(lib='log')
 
     # For tj_searchpathlist
-    ctx.check_cc(lib='dl')
+    if not (ctx.options.no_solibrary or
+            ctx.check_cc(lib='dl', mandatory=False)):
+        print('Disabling tj_solibrary.c')
 
     # For tj_log_sqlite
-    ctx.check_cc(lib='sqlite3')
+    if not (ctx.options.no_sqlite or
+            ctx.check_cc(lib='sqlite3', mandatory=False)):
+        print('Disabling tj_log_sqlite.c')
 
     if ctx.env.CC_NAME == 'gcc':
         ctx.env.CFLAGS += ['-std=gnu99', '-Wall', '-Wextra', '-Werror',
@@ -66,20 +74,26 @@ def build(ctx):
         export_includes = 'deps/uthash/src',
     )
 
+    src = [
+        'src/tj_array.c',
+        'src/tj_buffer.c',
+        'src/tj_error.c',
+        'src/tj_log.c',
+        'src/tj_searchpathlist.c',
+        'src/tj_template.c',
+    ]
+
+    if ctx.env.LIB_DL:
+        src.append('src/tj_solibrary.c')
+
+    if ctx.env.LIB_SQLITE3:
+        src.append('src/tj_log_sqlite.c')
+
     ctx.stlib(
         target = 'tj-tools',
         use = ['uthash', 'LOG', 'DL', 'SQLITE3'],
         export_includes = 'src',
-        source = [
-            'src/tj_array.c',
-            'src/tj_buffer.c',
-            'src/tj_error.c',
-            'src/tj_log.c',
-            'src/tj_log_sqlite.c',
-            'src/tj_searchpathlist.c',
-            'src/tj_solibrary.c',
-            'src/tj_template.c',
-        ],
+        source = src,
     )
 
     ctx.stlib(
@@ -87,16 +101,7 @@ def build(ctx):
         features = 'c cshlib',
         use = ['uthash', 'LOG', 'DL', 'SQLITE3'],
         export_includes = 'src',
-        source = [
-            'src/tj_array.c',
-            'src/tj_buffer.c',
-            'src/tj_error.c',
-            'src/tj_log.c',
-            'src/tj_log_sqlite.c',
-            'src/tj_searchpathlist.c',
-            'src/tj_solibrary.c',
-            'src/tj_template.c',
-        ],
+        source = src,
     )
 
     ## Unit tests
@@ -115,7 +120,8 @@ def build(ctx):
         _create_test(ctx, 'tj_heap')
         _create_test(ctx, 'tj_log')
         _create_test(ctx, 'tj_searchpathlist')
-        _create_test(ctx, 'tj_solibrary')
+        if ctx.env.LIB_DL:
+            _create_test(ctx, 'tj_solibrary')
         _create_test(ctx, 'tj_template')
         _create_test(ctx, 'tj_util', ['calloc', 'strdup', 'strndup'])
 
