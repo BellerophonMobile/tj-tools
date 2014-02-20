@@ -19,6 +19,10 @@ def options(ctx):
     opts = ctx.add_option_group('Build Options')
     opts.add_option('--optimize', action='store_true',
                     help='Build with optimization flags (default debug).')
+    opts.add_option('--no-static', action='store_true',
+                    help='Disable building static library.')
+    opts.add_option('--no-shared', action='store_true',
+                    help='Disable building shared library.')
     opts.add_option('--no-solibrary', action='store_true',
                     help='Disable building tj_solibrary.')
     opts.add_option('--no-sqlite', action='store_true',
@@ -60,6 +64,7 @@ def configure(ctx):
         else:
             ctx.env.CFLAGS += ['-O2', '-g']
 
+
 def build(ctx):
     # Add extra unit testing output
     ctx.post_mode = waflib.Build.POST_LAZY
@@ -89,20 +94,23 @@ def build(ctx):
     if ctx.env.LIB_SQLITE3:
         src.append('src/tj_log_sqlite.c')
 
-    ctx.stlib(
-        target = 'tj-tools',
-        use = ['uthash', 'LOG', 'DL', 'SQLITE3'],
-        export_includes = 'src',
-        source = src,
-    )
+    if not ctx.options.no_static:
+        ctx.stlib(
+            target = 'tj-tools',
+            use = ['uthash', 'LOG', 'DL', 'SQLITE3'],
+            export_includes = 'src',
+            source = src,
+        )
 
-    ctx.stlib(
-        target = 'tj-tools',
-        features = 'c cshlib',
-        use = ['uthash', 'LOG', 'DL', 'SQLITE3'],
-        export_includes = 'src',
-        source = src,
-    )
+
+    if not ctx.options.no_shared:
+        ctx.shlib(
+            target = 'tj-tools',
+            features = 'c',
+            use = ['uthash', 'LOG', 'DL', 'SQLITE3'],
+            export_includes = 'src',
+            source = src,
+        )
 
     ## Unit tests
     if not ctx.options.no_test:
