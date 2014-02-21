@@ -53,14 +53,11 @@ def configure(ctx):
         print('Disabling tj_log_sqlite.c')
 
     if ctx.env.CC_NAME == 'gcc':
-        ctx.env.CFLAGS += ['-std=gnu99', '-Wall', '-Wextra', '-Werror',
-                           '-Wno-sign-compare', '-Wno-unused-parameter',
-                           '-Wno-unknown-pragmas', '-Wno-pragmas',
-                           '-Wno-unknown-warning-option']
+        ctx.env.CFLAGS += ['-std=gnu99', '-Wall', '-Werror']
 
         if ctx.options.optimize:
             ctx.env.DEFINES += ['NDEBUG']
-            ctx.env.CFLAGS += ['-O3']
+            ctx.env.CFLAGS += ['-O2']
         else:
             ctx.env.CFLAGS += ['-O2', '-g']
 

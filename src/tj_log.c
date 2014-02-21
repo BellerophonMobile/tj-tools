@@ -191,8 +191,6 @@ tj_log_removeOutChannel(tj_log_outchannel *out)
 int
 tj_log_removePrintfChannel(void)
 {
-
-  #pragma GCC diagnostic ignored "-Wfree-nonheap-object"
   tj_log_removeOutChannel(&tj_log_fprintfChannel);
 
   // This is necessary so that cgo doesn't cause a warning about an
@@ -205,9 +203,7 @@ tj_log_removePrintfChannel(void)
 int
 tj_log_removeLogcatChannel(void)
 {
-
   #ifdef __ANDROID__
-    #pragma GCC diagnostic ignored "-Wfree-nonheap-object"
     tj_log_removeOutChannel(&tj_log_logcatChannel);
   #endif
 
