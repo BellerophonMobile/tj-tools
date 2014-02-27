@@ -94,7 +94,7 @@ def build(ctx):
     if not ctx.options.no_static:
         ctx.stlib(
             target = 'tj-tools',
-            use = ['uthash', 'LOG', 'DL', 'SQLITE3'],
+            use = ['uthash', 'LOG', 'DL', 'SQLITE3', 'cshlib'],
             export_includes = 'src',
             source = src,
         )
